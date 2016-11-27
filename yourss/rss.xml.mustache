@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:media="http://search.yahoo.com/mrss/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:creativeCommons="http://backend.userland.com/creativeCommonsRssModule" version="2.0">
+	<channel>
+		<title>Clips from {{url}}</title>
+		<link>{{yourss_feed_url}}</link>
+		<atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="self" type="application/rss+xml" href="{{yourss_feed_url}}"/>
+		<lastBuildDate>{{date}}</lastBuildDate><!-- Mon, 14 Nov 2016 21:51:43 PST -->
+		<generator>yourss {{yourss_url}}</generator>
+
+		{{#items}}<item>
+			<title>{{title}}</title>
+            <link>{{url}}</link>
+            {{#upload_date}}<pubDate>{{upload_date}}</pubDate>{{/upload_date}}
+            <guid isPermaLink="false">{{url}}</guid>
+            {{#description}}<description>{{description}}</description>{{/description}}
+            {{#uploader}}<author>{{uploader}}</author>{{/uploader}}
+            <enclosure url="{{url}}" length="47857459" type="{{mimetype}}"/>
+            <media:content url="{{url}}" fileSize="47857459" type="{{mimetype}}"/>
+            {{#uploader}}<itunes:author>{{uploader}}</itunes:author>{{/uploader}}
+            {{#description}}<itunes:summary>{{description}}</itunes:summary>{{/description}}
+            <itunes:keywords>{{tag_str}}</itunes:keywords>
+		</item>{{/items}}
+		
+	</channel>
+</rss>

@@ -4,6 +4,8 @@ from os.path import dirname, abspath, join
 from functools import reduce
 import urllib
 import urllib.parse
+from pystache import render
+
 
 class Text(object):
 	def text(self):
@@ -17,9 +19,16 @@ class TextFile(Text):
 	def text(self):
 		return "\n".join(open(self.path).readlines())
 
-class PathTextFile(TextFile):
-	def __init__(self, name):
-		TextFile.__init__(self, join(dirname(abspath(__file__)), name))
+class PypathTextFile(TextFile):
+	def __init__(self, *parts):
+		TextFile.__init__(self, join(dirname(abspath(__file__)), *parts))
+
+class PystacheArtifact(Text):
+	def __init__(self, *args):
+		self.parts=args[:-1]
+		self.context=args[-1]
+	def text(self):
+		return render(PypathTextFile('template', *self.parts), self.context)
 
 class UrlText(Text):
 	def __init__(self, *parts):
@@ -52,3 +61,4 @@ class UrlEscape(Text):
 		self.string=string
 	def text(self):
 		return urllib.parse.quote(self.string, safe='')
+

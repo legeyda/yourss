@@ -1,0 +1,14 @@
+
+    <item>
+        <title>{{title}}</title>
+        <link>{{url}}</link>
+        {{#upload_date}}<pubDate>{{upload_date}}</pubDate>{{/upload_date}}
+        <guid isPermaLink="false">{{url}}</guid>
+        {{#description}}<description>{{description}}</description>{{/description}}
+        {{#uploader}}<author>{{uploader}}</author>{{/uploader}}
+        <enclosure url="{{url}}" {{#filesize}}length="{{filesize}}"{{/filesize}} type="{{mimetype}}"></enclosure>
+        <media:content url="{{url}}" {{#filesize}}fileSize="{{filesize}}"{{/filesize}} type="{{mimetype}}"/>
+        {{#uploader}}<itunes:author>{{uploader}}</itunes:author>{{/uploader}}
+        {{#description}}<itunes:summary>{{description}}</itunes:summary>{{/description}}
+        <itunes:keywords>{{tag_str}}</itunes:keywords>
+    </item>

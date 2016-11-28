@@ -28,7 +28,7 @@ class PystacheArtifact(Text):
 		self.parts=args[:-1]
 		self.context=args[-1]
 	def text(self):
-		return render(PypathTextFile('template', *self.parts), self.context)
+		return render(PypathTextFile('template', *self.parts).text(), self.context)
 
 class UrlText(Text):
 	def __init__(self, *parts):

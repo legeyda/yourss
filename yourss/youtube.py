@@ -1,7 +1,7 @@
 import youtube_dl
 import json
 from .text import PypathTextFile, Text, UrlQuery, PystacheArtifact
-from .async import generate_stdout
+from .async import StdoutRedirector
 from functools import reduce
 from pystache import render
 
@@ -98,7 +98,7 @@ class YourssUrlParams(object):
 
 
 class Feed(object):
-	def __init__(self, url, yourss_base_url, base_url, clip_base_url, quality='high', audio=False, format=None, start_index=1, end_index=10):
+	def __init__(self, url, yourss_base_url, base_url, clip_base_url, quality='high', audio=False, format=None, page_index=1, page_size=10, match_video=None, ignore_video=None):
 		self.url=url
 		self.yourss_base_url=yourss_base_url
 		self.base_url=base_url
@@ -106,10 +106,12 @@ class Feed(object):
 		self.quality=quality
 		self.audio=audio
 		self.format=format
-		self.start_index=start_index
-		self.end_index=end_index
+		self.page_index=page_index
+		self.page_size=page_size
 	def get_ydl_opts(self):
-		return {'noplaylist': False, 'forcejson': True, 'skip_download': True, 'playliststart': self.start_index, 'playlistend': self.end_index, 'format': YdlFormat(self.quality, self.audio, self.format).text()}
+		return { 'noplaylist': False, 'forcejson': True, 'skip_download': True,
+		         'playliststart': (self.page_index-1)*self.page_size+1, 'playlistend': self.page_index*self.page_size,
+		         'format': YdlFormat(self.quality, self.audio, self.format).text() }
 	def _action(self):
 		with youtube_dl.YoutubeDL(self.get_ydl_opts()) as ydl:
 			ydl.download([self.url])
@@ -128,7 +130,7 @@ class Feed(object):
 			'yourss_feed_url': YourssUrlText(self.base_url, self.url, self.quality, self.audio, self.format).text()
 		}
 		yield PystacheArtifact('rss-header.mustache', feed_data).text()
-		for line in generate_stdout(self._action):
+		for line in StdoutRedirector(self._action):
 			if not line.startswith('{'): continue
 			item = json.loads(line)
 			if not item['url']:
@@ -169,13 +171,13 @@ class Episode(object):
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 			ydl.download([self.url])
 	def mimetype(self):
-		for line in generate_stdout(self._action_info):
+		for line in StdoutRedirector(self._action_info):
 			if not line.startswith('{'): continue
 			j = json.loads(line)
 			return 'audio/' + j['ext'] if self.audio else 'video/' + j['ext']
 		return 'audio/webm' if self.audio else 'video/mp4'
 	def generate(self):
 		def generator():
-			for line in generate_stdout(self._action_download):
+			for line in StdoutRedirector(self._action_download):
 				yield line
 		return generator()

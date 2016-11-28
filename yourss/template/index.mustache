@@ -1,13 +1,13 @@
 <html>
 	<head>
-		<title>yourss</title>
+		<title>yourss {{VERSION}}</title>
 	</head>
 	<body>
 		<h1>yourss</h1>
 		<p>Expose any youtube channel, playlist, search result etc. 
 				as rss feed with downloadable media files.</p>
 		<p>Usage:</p>
-		<p><pre>GET 127.0.0.1:8888/api/v1/rss/&lt;PLAYLIST_ID&gt;</pre></p>
+		<p><pre>GET {{BASE_URL}}/api/v1/rss/&lt;PLAYLIST_ID&gt;</pre></p>
 		<p>Yourss is a tiny wrapper around <a href="https://rg3.github.io/youtube-dl/">youtube_dl</a> 
 				which does all the hard work.</p>
 		<p>See <a href="http://github.com/legeyda/yourss">project home</a>.</p>

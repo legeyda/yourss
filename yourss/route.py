@@ -1,8 +1,10 @@
 import cherrypy
-from yourss.youtube import Feed as YoutubeFeed
+
+from yourss.text import UrlText, PystacheArtifact
+from yourss.valid import Noneable, ParameterError, Quality, PageIndex, PageSize, MediaType, LinkType, MatchTitle, IgnoreTitle
 from yourss.youtube import Episode as YoutubeEpisode
-from yourss.text import UrlText, PypathTextFile, PystacheArtifact
-from .validator import ParameterError, Audio, Quality, PageIndex, PageSize
+from yourss.youtube import Feed as YoutubeFeed
+
 
 def Response(code, message):
 	cherrypy.response.status = code
@@ -12,7 +14,7 @@ def Response(code, message):
 class Route(object):
 	def __init__(self, prefix, controller):
 		if prefix is None or prefix in ('', '/'): self.prefix=()
-		elif isinstance(prefix, str): self.prefix='/'.split(prefix)
+		elif isinstance(prefix, str): self.prefix=(prefix,)
 		else: self.prefix=prefix
 		self.controller=controller
 	def match(self, vpath):
@@ -40,17 +42,16 @@ class Router(object):
 
 
 class Episode(object):
-	def __init__(self, yourss_base_url, base_url, audio=False):
+	def __init__(self, yourss_base_url, base_url):
 		self.yourss_base_url=yourss_base_url
 		self.base_url=base_url
-		self.audio=audio
 	@cherrypy.expose
-	def index(self, url, quality=None, audio=None, format=None):
+	def index(self, url, media_type='video', quality='high', format_=None):
 		youtube_video=YoutubeEpisode(
 			url,
-			quality=Noneable(Quality(quality)).value(),
-			audio=self.audio,
-			format=format,)
+			media_type=MediaType(media_type).value(),
+			quality=Quality(quality).value(),
+			format_=format_,)
 		cherrypy.response.headers['Content-Type'] = youtube_video.mimetype()
 		return youtube_video.generate()
 
@@ -58,25 +59,28 @@ class Episode(object):
 
 
 class Feed(object):
-	def __init__(self, yourss_base_url, base_url, clip_base_url, audio=False):
+	def __init__(self, yourss_base_url, base_url, clip_base_url):
 		self.yourss_base_url=yourss_base_url
 		self.base_url=base_url
 		self.clip_base_url=clip_base_url
-		self.audio=audio
 	@cherrypy.expose
-	def index(self, url, quality='high', format='', page_index=1, page_size=10):
+	def index(self, url, match_title=None, ignore_title=None,  page_index=1, page_size=10,
+	          media_type='video', quality='high', format=None, link_type='direct'):
 		cherrypy.response.headers['Content-Type']='text/xml'
 		try:
 			return YoutubeFeed(
-				url,
 			    yourss_base_url=self.yourss_base_url,
 			    base_url=self.base_url,
 			    clip_base_url=self.clip_base_url,
+				url=url,
+				match_title=MatchTitle(match_title, name='match_title').value(),
+				ignore_title=IgnoreTitle(ignore_title, name='ignore_title').value(),
+				page_index=PageIndex(page_index).value(),
+				page_size=PageSize(page_size).value(),
+			    media_type=MediaType(media_type).value(),
 			    quality=Quality(quality).value(),
-			    audio=self.audio,
 			    format=format,
-			    page_index=PageIndex(page_index).value(),
-			    page_size=PageSize(page_size).value()
+				link_type=LinkType(link_type).value(),
 			).generate()
 		except ParameterError as e:
 			return Response(e.code, e.message)
@@ -89,26 +93,14 @@ class Yourss(Router):
 		self.yourss_base_url=yourss_base_url
 		self.base_url=base_url
 		Router.__init__(self,
-			Route(('feed', 'video'), Feed(
+			Route('feed', Feed(
 					yourss_base_url=self.yourss_base_url,
-					base_url=UrlText(self.base_url, 'feed', 'video').text(),
-					clip_base_url=UrlText(self.base_url, 'video').text())),
-			Route(('feed', 'audio'), Feed(
+					base_url=UrlText(self.base_url, 'feed').text(),
+					clip_base_url=UrlText(self.base_url, 'episode').text())),
+			Route('episode', Episode(
 					yourss_base_url=self.yourss_base_url,
-					base_url=UrlText(self.base_url, 'feed', 'audio').text(),
-					clip_base_url=UrlText(self.base_url, 'audio').text()))
+					base_url=UrlText(self.base_url, 'episode').text()))
 		)
-	@cherrypy.expose
-	def index(self, url=None,
-	          youtube=None, user=None, channel=None, playlist=None,
-	          feed=True, links='direct', episode=False, audio=False, video=True,
-	          page_index=1, page_size=10,
-	          match_title = None, ignore_title = None,
-	          quality='high', format=None):
-
-
-
-		pass
 
 
 

@@ -5,6 +5,7 @@ from functools import reduce
 import urllib
 import urllib.parse
 from pystache import render
+from . import VERSION
 
 
 class Text(object):
@@ -26,7 +27,9 @@ class PypathTextFile(TextFile):
 class PystacheArtifact(Text):
 	def __init__(self, *args):
 		self.parts=args[:-1]
-		self.context=args[-1]
+		self.context={}
+		self.context.update(args[-1])
+		self.context['YOURSS_VERSION']=VERSION
 	def text(self):
 		return render(PypathTextFile('template', *self.parts).text(), self.context)
 

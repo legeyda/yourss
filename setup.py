@@ -13,7 +13,7 @@ setup(
     maintainer = '',
     maintainer_email = '',
     url = 'http://github.com/legeyda/yourss',
-    dependency_links = [str(r.req) for r in parse_requirements(join(dirname(__file__), 'requirements.txt'))],
+    dependency_links = [str(r.req) for r in parse_requirements(join(dirname(__file__), 'requirements.txt'), session=False)],
     packages = ['yourss'],
     include_package_data = True,
 )

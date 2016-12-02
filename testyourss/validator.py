@@ -1,5 +1,7 @@
 from unittest import TestCase
-import yourss.cherry.validator as validator
+
+import yourss.valid as validator
+
 
 class ValidatorTest(TestCase):
 	def test_page_size(self):

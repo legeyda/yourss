@@ -1,4 +1,12 @@
+#make
 target
+
+# setuptools
+build
+dist
+MANIFEST
+
+# ides
 .idea
 *.pyc
 *.sublime-*

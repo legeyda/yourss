@@ -1,4 +1,4 @@
-
+import re
 
 class ParameterError(Exception):
 	def __init__(self, code=400, message='client error', *args, **kwargs):
@@ -33,6 +33,9 @@ class Parameter(object):
 		if not self.valid(): self.error()
 		return self._value.value() if isinstance(self._value, Parameter) else self._value
 
+
+
+
 class Noneable(Parameter):
 	def value(self):
 		return None if (self.raw() is None) else Parameter.value(self)
@@ -59,8 +62,8 @@ class PositiveInteger(Parameter):
 
 class Boolean(Parameter):
 	def value(self):
-		if   self.raw() in ['True',  'true',  'yes', '+', 'ok',  '1']: return True
-		elif self.raw() in ['False', 'false', 'no',  '-', 'nie', '0']: return True
+		if   self.raw() in [True,  1, 'True',  'true',  'yes', '+', 'ok',  '1']: return True
+		elif self.raw() in [False, 0, 'False', 'false', 'no',  '-', 'nie', '0']: return True
 		else: self.error()
 
 class Negated(Parameter):
@@ -82,10 +85,20 @@ class ChoiceList(Parameter):
 	def valid(self):
 		return self.raw() in self.choice_list
 
+class Regex(Parameter):
+	def __init__(self, value, name='parameter', message='{name} is invalid regular expression'):
+		Parameter.__init__(self, value, name=name, message=message)
+	def valid(self):
+		try:
+			re.compile(self.raw())
+		except:
+			return False
+		else:
+			return True
 
 class Audio(Noneable):
 	def __init__(self, data):
-		Noneable.__init__(self, Boolean(data, 'audio'))
+		Noneable.__init__(self, Boolean(data, name='audio'))
 
 class Quality(Parameter):
 	def __init__(self, value, name='quality'):
@@ -98,6 +111,23 @@ class PageIndex(Parameter):
 class PageSize(Parameter):
 	def __init__(self, value, name='page_size'):
 		Parameter.__init__(self, Default(PositiveInteger(value, name=name), 10))
+
+class MediaType(Parameter):
+	def __init__(self, value, name='page_size'):
+		Parameter.__init__(self, Default(ChoiceList(value, ['video', 'audio'], name=name), 'video'))
+
+class LinkType(Parameter):
+	def __init__(self, value, name='page_size'):
+		Parameter.__init__(self, Default(ChoiceList(value, ['direct', 'proxy', 'webpage'], name=name), 'direct'))
+
+class MatchTitle(Parameter):
+	def __init__(self, value, name='match_title'):
+		Parameter.__init__(self, Noneable(Regex(value, name=name)))
+
+class IgnoreTitle(Parameter):
+	def __init__(self, value, name='ignore_title'):
+		Parameter.__init__(self, Noneable(Regex(value, name=name)))
+
 
 class UrlValidator(Parameter):
 	def __init__(self, url=None, youtube=None, youtube_user=None, youtube_channel=None, youtube_playlist=None,

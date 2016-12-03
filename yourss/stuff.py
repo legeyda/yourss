@@ -32,19 +32,10 @@ class Config(object):
 		else: return 'http://' + self.host() + ':' + str(self.port())
 	def override(self, base):
 		return Config(
-			self.host()     if self.host()     else base.host(),
-			self.port()     if self.port()     else base.port(),
-			self.debug()    if self.debug()    else base.debug(),
-			self.base_url() if self.base_url() else base.base_url())
-
-class LazyWsgiApplication(object):
-	def __init__(self, application_factory):
-		self.application_factory=application_factory
-		self.application=None
-	def __call__(self, environ, start_response):
-		if self.application is None:
-			self.application = self.application_factory()
-		return self.application(environ, start_response)
+			self._host     if self._host     else base._host,
+			self._port     if self._port     else base._port,
+			self._debug    if self._debug    else base._debug,
+			self._base_url if self._base_url else base._base_url)
 
 class InternalServerError(Exception):
 		def __init__(self, code=500, message='client error', *args, **kwargs):

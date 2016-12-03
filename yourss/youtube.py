@@ -5,6 +5,7 @@ from .async import StdoutRedirector
 from functools import reduce
 from datetime import datetime
 import logging
+import hashlib
 
 class YoutubeVideoPageUrl(Text):
 	"""from youtube id to full url"""
@@ -91,6 +92,17 @@ class DateRfc822D(Text):
 		date = self.value if isinstance(self.value, datetime) else datetime.strptime(self.value, '%Y%m%d')
 		return date.strftime('%a, %d %b %Y %H:%M:%S %Z')
 
+class YdlFileSize(object):
+	def __init__(self, j):
+		self.j=j
+	def value(self):
+		if self.j.get('filesize', None):
+			return self.j['filesize']
+		else:
+			for format_ in self.j.get('formats', ()):
+				if format_['format_id'] == self.j['format_id']:
+					self.j['filesize'] = format_.get('filesize', None)
+
 
 
 class Feed(object):
@@ -149,10 +161,7 @@ class Feed(object):
 			item['yourss_url']=self.base_url
 			if 'tags' in  item:
 				item['tag_str']=','.join(item['tags'])
-			if not item.get('filesize', None):
-				for format_ in item.get('formats', ()):
-					if format_['format_id'] == item['format_id']:
-						item['filesize'] = format_.get('filesize', None)
+			item['filesize']=YdlFileSize(item).value()
 			yield PystacheArtifact('rss-item.mustache', item).text()
 		yield PystacheArtifact('rss-footer.mustache', feed_data).text()
 
@@ -166,6 +175,7 @@ class Episode(object):
 		self.quality=quality
 		self.format=format_
 		self.ydl_format=YdlFormat(media_type, quality, format_).text()
+		self.j=None
 	def _action_info(self):
 		ydl_opts = {'noplaylist': True, 'forcejson': True, 'skip_download': True, 'format': self.ydl_format}
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -174,13 +184,25 @@ class Episode(object):
 		ydl_opts = {'noplaylist': False, 'outtmpl': '-', 'quiet': True, 'format': self.ydl_format}
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 			ydl.download([self.url])
+	def get_info(self):
+		if not self.j:
+			result=None
+			for line in StdoutRedirector(self._action_info):  # StdoutRedirector must be disposed
+				if not line.startswith('{'): continue
+				result=json.loads(line)
+			return result
+	def get_ext(self):
+		return self.get_info().get('ext', 'w4m') if self.media_type=='audio' else self.get_info().get('ext', 'mp4')
 	def mimetype(self):
-		result='audio/webm' if 'audio' == self.media_type else 'video/mp4'
-		for line in StdoutRedirector(self._action_info): # StdoutRedirector must be disposed
-			if not line.startswith('{'): continue
-			j = json.loads(line)
-			result='audio/' + j['ext'] if 'audio' == self.media_type else 'video/' + j['ext']
-		return result
+		j=self.get_info()
+		if j: return 'audio/' + j.get('ext', 'w4m') if 'audio' == self.media_type else 'video/' + j.get('ext', 'mp4')
+		else: return 'application/octet-stream'
+	def filesize(self):
+		j=self.get_info()
+		if j: return YdlFileSize(j).value()
+		else: return None
+	def filename(self):
+		return hashlib.sha224(self.url.encode('UTF-8')).hexdigest() + '.' + self.get_ext()
 	def generate(self):
 		def generator():
 			for line in StdoutRedirector(self._action_download):

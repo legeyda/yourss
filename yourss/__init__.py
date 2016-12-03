@@ -5,7 +5,7 @@ from os import environ as env
 import cherrypy
 
 from yourss.route import Root
-from .stuff import Config, LazyWsgiApplication
+from .stuff import Config
 
 # load env
 envConfig=Config(env.get('HOST'), env.get('PORT'), env.get('DEBUG'), env.get('BASE_URL'))

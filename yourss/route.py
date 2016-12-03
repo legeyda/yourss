@@ -53,6 +53,10 @@ class Episode(object):
 			quality=Quality(quality).value(),
 			format_=format_,)
 		cherrypy.response.headers['Content-Type'] = youtube_video.mimetype()
+		cherrypy.response.headers['Content-Disposition'] = 'attachment; filename="' + youtube_video.filename() + '"'
+		filesize=youtube_video.filesize()
+		if filesize:
+			cherrypy.response.headers['Content-Length'] = str(filesize)
 		return youtube_video.generate()
 
 

@@ -1,15 +1,122 @@
 <html>
-	<head>
-		<title>yourss {{VERSION}}</title>
-	</head>
-	<body>
-		<h1>yourss</h1>
-		<p>Expose any youtube channel, playlist, search result etc. 
-				as rss feed with downloadable media files.</p>
-		<p>Usage:</p>
-		<p><pre>GET {{BASE_URL}}/api/v1/rss/&lt;PLAYLIST_ID&gt;</pre></p>
-		<p>Yourss is a tiny wrapper around <a href="https://rg3.github.io/youtube-dl/">youtube_dl</a> 
-				which does all the hard work.</p>
-		<p>See <a href="http://github.com/legeyda/yourss">project home</a>.</p>
-	</body>
+<head>
+	<title>yourss {{VERSION}}</title>
+	<style>
+		body {
+			text-align: center;
+		}
+		body>div {
+			display: inline-block;
+			text-align: left;
+		}
+		table {
+			background: #EEEEEE;
+			border: 1px solid black;
+			padding: 0.5em;
+		}
+		td {
+			padding: 10px;
+		}
+	</style>
+</head>
+<body>
+
+<div>
+	<h1>yourss {{VERSION}}</h1>
+
+	<h2>About</h2>
+
+	<p>Generate rss/atom-feed from any media source (e.g. youtube playlist).</p>
+
+	<p>Yourss is a tiny wrapper around <a href="https://rg3.github.io/youtube-dl/">youtube_dl</a>,
+		which does all the hard work on extracting media from web pages.</p>
+
+	<h2>Use it</h2>
+
+	<p>Fill in the form below to get your feed.</p>
+
+	<form action="api/v1/feed" method="GET">
+
+		<table width="30em">
+			<tbody>
+			<tr>
+				<td colspan="4" style="text-align: center;">
+					<h3>Feed generation</h3>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4">
+					<label>Url of the page containg media<br/>
+						<input id="url" type="url" name="url" size="100" placeholder="web page url" required="true"/>
+					</label>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<label>Match titles regular expression<br/>
+						<input type="text" name="match_title" size="40"
+						       placeholder="only output videos matching this regular expression"/>
+					</label>
+				</td>
+				<td colspan="2">
+					<label>Ignore titles regular expression<br/>
+						<input type="text" name="ignore_title" size="40"
+						       placeholder="exclude videos matching this regular expression"/>
+					</label>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<label>Page size<br/>
+						<input id="page_size" type="number" name="page_size" value="10"/>
+					</label>
+				</td>
+				<td colspan="2">
+					<label>Page index<br/>
+						<input id="page_index" type="number" name="page_index" value="1"/>
+					</label>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="1">
+					<label>Media type<br/>
+						<select id="media_type" name="media_type">
+							<option selected="selected">video</option>
+							<option>audio</option>
+						</select>
+					</label>
+				</td>
+				<td colspan="1">
+					<label>Quality<br/>
+						<select id="quality" name="quality">
+							<option selected="selected">high</option>
+							<option>low</option>
+						</select>
+					</label>
+				</td>
+				<td colspan="2">
+					<label>youtube_dl format (see
+						<a href="https://github.com/rg3/youtube-dl/blob/master/README.md#format-selection">youtube_dl's
+							format manual</a>):
+						<input id="format" type="text" name="format" size="40" value=""/>
+					</label>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4" style="text-align: center;">
+					<input type="submit" value="generate feed" style="width: 20em;"/>
+				</td>
+			</tr>
+			</tbody>
+		</table>
+
+		<div>
+
+		</div>
+	</form>
+
+
+	<p>See <a href="http://github.com/legeyda/yourss">project home</a>.</p>
+</div>
+</body>
 </html>

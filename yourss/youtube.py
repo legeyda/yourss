@@ -1,10 +1,9 @@
 import youtube_dl
 import json
-from .text import PypathTextFile, Text, UrlQuery, PystacheArtifact, UrlText
+from .text import Text, UrlQuery, PystacheArtifact, UrlText
 from .async import StdoutRedirector
 from functools import reduce
 from datetime import datetime
-from .stuff import InternalServerError
 import logging
 
 class YoutubeVideoPageUrl(Text):
@@ -84,6 +83,15 @@ class EpisodeLink(Text):
 		return {'webpage': self.webpage_url, 'direct': self.direct_url, 'proxy': self.proxy_url}[self.link_type]()
 
 
+class DateRfc822D(Text):
+	def __init__(self, value):
+		self.value=value
+	def text(self):
+		if not self.value: return None
+		date = self.value if isinstance(self.value, datetime) else datetime.strptime(self.value, '%Y%m%d')
+		return date.strftime('%a, %d %b %Y %H:%M:%S %Z')
+
+
 
 class Feed(object):
 	def __init__(self, yourss_base_url, base_url, clip_base_url,
@@ -123,7 +131,7 @@ class Feed(object):
 
 		feed_data={
 			'url': self.url,
-			'date': str(datetime.now()),
+			'date': DateRfc822D(datetime.now()),
 			'yourss_url': self.yourss_base_url,
 			'yourss_feed_url': YourssUrlText(self.base_url, self.url, self.media_type, self.quality, self.format).text()
 		}
@@ -136,9 +144,10 @@ class Feed(object):
 			except Exception as e:
 				logging.getLogger(__name__).error('unable to generate url', e)
 				continue
-			item['mimetype']='audio/' + item['ext'] if self.media_type=='audio' else 'video/' + item['ext']
+			item['upload_date']=DateRfc822D(item.get('upload_date'))
+			item['mimetype']='audio/' + item.get('ext', 'w4m') if self.media_type=='audio' else 'video/' + item.get('ext', 'mp4')
 			item['yourss_url']=self.base_url
-			if item['tags']:
+			if 'tags' in  item:
 				item['tag_str']=','.join(item['tags'])
 			if not item.get('filesize', None):
 				for format_ in item.get('formats', ()):

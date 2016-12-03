@@ -111,4 +111,4 @@ class Root(Router):
 		Router.__init__(self, Route(parts, Yourss(self.base_url, base_url=UrlText(self.base_url, *parts).text())))
 	@cherrypy.expose
 	def index(self):
-		return PystacheArtifact('index.mustache', {'base_url': self.base_url}).text()
+		return PystacheArtifact('index.mustache', {'BASE_URL': self.base_url}).text()

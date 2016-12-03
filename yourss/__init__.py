@@ -8,10 +8,8 @@ from yourss.route import Root
 from .stuff import Config, LazyWsgiApplication
 
 # load env
-envConfig=Config(env.get('YOURSS_HOST'), env.get('YOURSS_PORT'), env.get('YOURSS_DEBUG'), env.get('YOURSS_BASE_URL'))
-
-# wsgi interface
-application=LazyWsgiApplication(lambda: cherrypy.Application(Root(envConfig.base_url()), script_name=None, config=None))
+envConfig=Config(env.get('HOST'), env.get('PORT'), env.get('DEBUG'), env.get('BASE_URL'))
+envConfig=Config(env.get('YOURSS_HOST'), env.get('YOURSS_PORT'), env.get('YOURSS_DEBUG'), env.get('YOURSS_BASE_URL')).override(envConfig)
 
 # for embedding
 def start_server(host=None, port=None, debug=None, base_url=None):

@@ -49,29 +49,31 @@ class QueueIterator(object):
 
 
 class StdoutRedirector(object):
-	def __init__(self, action):
+	def __init__(self, action, queue_size=10*1024*1024, timeout=10*60):
 		self.action=action
+		self.queue_size=queue_size
+		self.timeout=timeout
 	def clean_queue(self, queue):
 		try:
 			while True: queue.get(False)
 		except Empty: return
 	def __iter__(self):
-		queue = Queue(10 * 1024 * 1024)  # 10Mb buffer
+		queue = Queue(self.queue_size)
 		buffer = FakeStdout(queue)
 		# producer thread
-		def producer():
+		def action():
 			try:
 				with redirect(buffer): self.action()
 			finally: queue.put(PoisonPill, True)
-		thread=Thread(target=producer)
-		thread.start()
+		producer=Thread(target=action)
+		producer.start()
 		iterator = QueueIterator(queue)
 		# whenever guard thread detects consumer does not consume (for whatever reason: hangs or failed), turn off queing
 		def guard():
-			while True:
+			while producer.is_alive():
 				sleep(60)
-				if iterator.idle_time()>60*10:
-					LOGGER.warning('consumer idle for 10 minutes, turning off its queue')
+				if iterator.idle_time()>self.timeout:
+					LOGGER.warning('consumer idle for %s seconds, turning off its queue' % (self.timeout, ))
 					buffer.disable()
 					try: # empty queue to spare memory
 						while True: queue.get(False)
@@ -79,27 +81,3 @@ class StdoutRedirector(object):
 		Thread(target=guard).start()
 		return iterator
 
-
-def generate_stdout(action):
-	queue = Queue(10*1024*1024) # 10Mb buffer
-	buffer=FakeStdout(queue)
-
-	def producer():
-		try:
-			with redirect(buffer): action()
-		finally:
-			queue.put(PoisonPill, True)
-	thread=Thread(target=producer)
-	thread.start()
-
-	def guard():
-		sleep(5)
-		while not thread.is_alive():
-
-			sleep(5)
-	Thread(target=guard).start()
-
-	while True:
-		got=queue.get(True)
-		if got == PoisonPill: break
-		yield got

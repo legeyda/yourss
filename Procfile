@@ -1,1 +1,1 @@
-web: gunicorn yourss
+web: gunicorn yourss.wsgi

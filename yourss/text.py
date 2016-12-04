@@ -54,7 +54,7 @@ class UrlQuery(Text):
 		self.params=kwargs
 	def text(self):
 		parts=[]
-		for key in self.params.keys():
+		for key in sorted(self.params.keys()):
 			parts.append(str(key) + '=' + UrlEscape(str(self.params[key])).text())
 		string='&'.join(parts)
 		return '?' + string if string else ''

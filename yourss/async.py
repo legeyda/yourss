@@ -16,7 +16,7 @@ class Volatile(object):
 		with self.lock: self._value=value
 
 class PoisonPill(object):
-	"""prducer puts this into queue to identify end of sequence"""
+	"""producer puts this into queue to identify end of producing"""
 	pass
 
 class FakeStdout(object):
@@ -70,14 +70,15 @@ class StdoutRedirector(object):
 		iterator = QueueIterator(queue)
 		# whenever guard thread detects consumer does not consume (for whatever reason: hangs or failed), turn off queing
 		def guard():
-			while producer.is_alive():
+			while True:
 				sleep(60)
-				if iterator.idle_time()>self.timeout:
+				if not queue.empty() and iterator.idle_time()>self.timeout:
 					LOGGER.warning('consumer idle for %s seconds, turning off its queue' % (self.timeout, ))
 					buffer.disable()
 					try: # empty queue to spare memory
 						while True: queue.get(False)
 					except Empty: pass
+					break
 		Thread(target=guard).start()
 		return iterator
 

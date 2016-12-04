@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:media="http://search.yahoo.com/mrss/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:creativeCommons="http://backend.userland.com/creativeCommonsRssModule" version="2.0">
 	<channel>
-		<title>Clips from {{url}}</title>
+		<title>Episodes from {{url}}</title>
 		<link>{{yourss_feed_url}}</link>
 		<atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="self" type="application/rss+xml" href="{{yourss_feed_url}}"/>
 		<lastBuildDate>{{date}}</lastBuildDate>
 		<generator>yourss {{yourss_url}}</generator>
+		{{#thumbnail}}<media:thumbnail url="{{thumbnail}}"/>{{/thumbnail}}

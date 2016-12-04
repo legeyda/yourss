@@ -145,7 +145,8 @@ class Feed(object):
 			'url': self.url,
 			'date': DateRfc822D(datetime.now()),
 			'yourss_url': self.yourss_base_url,
-			'yourss_feed_url': YourssUrlText(self.base_url, self.url, self.media_type, self.quality, self.format).text()
+			'yourss_feed_url': YourssUrlText(self.base_url, self.url, self.media_type, self.quality, self.format).text(),
+			#'thumbnail': Episode(self.url, self.media_type, self.quality, self.format).thumbnail()
 		}
 		yield PystacheArtifact('rss-header.mustache', feed_data).text()
 		for line in StdoutRedirector(self._action):
@@ -186,11 +187,11 @@ class Episode(object):
 			ydl.download([self.url])
 	def get_info(self):
 		if not self.j:
-			result=None
+			self.j={}
 			for line in StdoutRedirector(self._action_info):  # StdoutRedirector must be disposed
 				if not line.startswith('{'): continue
-				result=json.loads(line)
-			return result
+				self.j=json.loads(line)
+		return self.j
 	def get_ext(self):
 		return self.get_info().get('ext', 'w4m') if self.media_type=='audio' else self.get_info().get('ext', 'mp4')
 	def mimetype(self):
@@ -203,6 +204,8 @@ class Episode(object):
 		else: return None
 	def filename(self):
 		return hashlib.sha224(self.url.encode('UTF-8')).hexdigest() + '.' + self.get_ext()
+	def thumbnail(self):
+		return self.get_info().get('thumbnail', None)
 	def generate(self):
 		def generator():
 			for line in StdoutRedirector(self._action_download):

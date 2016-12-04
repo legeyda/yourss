@@ -3,10 +3,10 @@
         <title>{{title}}</title>
         <link>{{url}}</link>
         {{#upload_date}}<pubDate>{{upload_date}}</pubDate>{{/upload_date}}
-        <guid isPermaLink="false">{{url}}</guid>
+        <guid isPermaLink="false">{{id}}</guid>
         <description>{{#thumbnail}}<img src="{{thumbnail}}"/>{{/thumbnail}}{{description}}</description>
-        <enclosure url="{{url}}" {{#filesize}}length="{{filesize}}"{{/filesize}}{{^filesize}}{{/filesize}} type="{{mimetype}}"></enclosure>
-        <media:content url="{{url}}" {{#filesize}}fileSize="{{filesize}}"{{/filesize}} type="{{mimetype}}"/>
+        <enclosure url="{{url}}" {{#filesize}}length="{{filesize}}"{{/filesize}} />
+        <media:content url="{{url}}" {{#filesize}}fileSize="{{filesize}}"{{/filesize}} />
         {{#uploader}}<itunes:author>{{uploader}}</itunes:author>{{/uploader}}
         {{#description}}<itunes:summary>{{description}}</itunes:summary>{{/description}}
         <itunes:keywords>{{tag_str}}</itunes:keywords>

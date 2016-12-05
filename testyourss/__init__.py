@@ -7,6 +7,7 @@
 # 	return TestSuite(cases)
 
 from testyourss.validator import *
+from testyourss.async import *
 
 import unittest
 if __name__ == "__main__":

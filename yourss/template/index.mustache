@@ -17,6 +17,9 @@
 		td {
 			padding: 10px;
 		}
+		.large, .large input {
+            font-size: 150%;
+		}
 	</style>
 </head>
 <body>
@@ -24,12 +27,17 @@
 <div>
 	<h1>yourss {{VERSION}}</h1>
 
+
+
 	<h2>About</h2>
 
-	<p>Generate rss/atom-feed from any media source (e.g. youtube playlist).</p>
+	<p>Generate rss/atom-feed from any media source (e.g. youtube playlist). 
+		The resulting xml can be added to any podcast client</p>
 
 	<p>Yourss is a tiny wrapper around <a href="https://rg3.github.io/youtube-dl/">youtube_dl</a>,
 		which does all the hard work on extracting media from web pages.</p>
+
+
 
 	<h2>Use it</h2>
 
@@ -45,22 +53,22 @@
 				</td>
 			</tr>
 			<tr>
-				<td colspan="6">
+				<td colspan="6" class="large">
 					<label>Url of the page containg media<br/>
-						<input id="url" type="url" name="url" size="100" placeholder="web page url" required="true"/>
+						<input id="url" type="url" name="url" size="40" placeholder="web page url" required="true"/>
 					</label>
 				</td>
 			</tr>
 			<tr>
 				<td colspan="3">
 					<label>Match titles regular expression<br/>
-						<input type="text" name="match_title" size="40"
+						<input type="text" name="match_title" size="30"
 						       placeholder="only output videos matching this regular expression"/>
 					</label>
 				</td>
 				<td colspan="3">
 					<label>Ignore titles regular expression<br/>
-						<input type="text" name="ignore_title" size="40"
+						<input type="text" name="ignore_title" size="30"
 						       placeholder="exclude videos matching this regular expression"/>
 					</label>
 				</td>
@@ -125,7 +133,15 @@
 	</form>
 
 
-	<p>See <a href="http://github.com/legeyda/yourss">project home</a>.</p>
+
+	<h2>Links</h2>
+	<ul>
+		<li><a href="http://github.com/legeyda/yourss">yourss project home</a></li>
+		<li><a href="https://rg3.github.io/youtube-dl/">youtube_dl</a></li>
+	</ul>
+
+
+
 </div>
 </body>
 </html>

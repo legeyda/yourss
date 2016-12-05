@@ -49,10 +49,11 @@ class QueueIterator(object):
 
 
 class StdoutRedirector(object):
-	def __init__(self, action, queue_size=10*1024*1024, timeout=10*60):
+	def __init__(self, action, queue_size=10*1024*1024, timeout=10*60, check_interval=60):
 		self.action=action
 		self.queue_size=queue_size
 		self.timeout=timeout
+		self.check_interval=check_interval
 	def clean_queue(self, queue):
 		try:
 			while True: queue.get(False)
@@ -71,7 +72,7 @@ class StdoutRedirector(object):
 		# whenever guard thread detects consumer does not consume (for whatever reason: hangs or failed), turn off queing
 		def guard():
 			while True:
-				sleep(60)
+				sleep(self.check_interval)
 				if not queue.empty() and iterator.idle_time()>self.timeout:
 					LOGGER.warning('consumer idle for %s seconds, turning off its queue' % (self.timeout, ))
 					buffer.disable()

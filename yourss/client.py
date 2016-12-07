@@ -73,7 +73,7 @@ class FileWriter(object):
 def run(base_url, url,
 	    match_title=None, ignore_title=None, page_index=1, page_size=100,
 	    media_type='video', quality='high', format=None, link_type='direct', output='-'):
-	feed = Feed(base_url, UrlText(base_url, 'feed').text(), UrlText(base_url, 'episode').text(),
+	feed = Feed(base_url, UrlText(base_url, 'api', 'v1', 'feed').text(), UrlText(base_url, 'api', 'v1', 'episode').text(),
 	            url, match_title, ignore_title, page_index, page_size,
 	            media_type, quality, format, link_type)
 	FileWriter(output).consume(feed.generate())

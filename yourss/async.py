@@ -49,7 +49,7 @@ class QueueIterator(object):
 
 
 class StdoutRedirector(object):
-	def __init__(self, action, queue_size=10*1024*1024, timeout=10*60, check_interval=60):
+	def __init__(self, action, queue_size=256, timeout=60, check_interval=5):
 		self.action=action
 		self.queue_size=queue_size
 		self.timeout=timeout
@@ -73,6 +73,8 @@ class StdoutRedirector(object):
 		def guard():
 			while True:
 				sleep(self.check_interval)
+				if not producer.is_alive() and queue.empty():
+					break
 				if not queue.empty() and iterator.idle_time()>self.timeout:
 					LOGGER.warning('consumer idle for %s seconds, turning off its queue' % (self.timeout, ))
 					buffer.disable()

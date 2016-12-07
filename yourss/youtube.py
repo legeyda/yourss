@@ -26,7 +26,7 @@ class YdlFormat(Text):
 	def text(self):
 		if self.format: return self.format
 		elif 'video'==self.media_type: return 'worst[ext=mp4]/worst' if self.quality=='low' else 'best[ext=mp4]/best'
-		else:                          return 'worstaudio'           if self.quality=='low' else 'bestaudio'
+		else:                          return 'worstaudio/worst'           if self.quality=='low' else 'bestaudio/best'
 
 
 class YourssUrlText(Text):
@@ -158,7 +158,7 @@ class Feed(object):
 				logging.getLogger(__name__).error('unable to generate url', e)
 				continue
 			item['upload_date']=DateRfc822D(item.get('upload_date'))
-			item['mimetype']='audio/' + item.get('ext', 'w4a') if self.media_type=='audio' else 'video/' + item.get('ext', 'mp4')
+			item['mimetype']='audio/' + item.get('ext', 'webm') if self.media_type=='audio' else 'video/' + item.get('ext', 'mp4')
 			item['yourss_url']=self.base_url
 			if 'tags' in  item:
 				item['tag_str']=','.join(item['tags'])
@@ -193,7 +193,7 @@ class Episode(object):
 				self.j=json.loads(line)
 		return self.j
 	def get_ext(self):
-		return self.get_info().get('ext', 'w4a') if self.media_type=='audio' else self.get_info().get('ext', 'mp4')
+		return self.get_info().get('ext', 'webm') if self.media_type=='audio' else self.get_info().get('ext', 'mp4')
 	def mimetype(self):
 		j=self.get_info()
 		if j: return 'audio/' + self.get_ext() if 'audio' == self.media_type else 'video/' + self.get_ext()

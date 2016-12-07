@@ -1,6 +1,6 @@
 
 from cherrypy import Application
-from . import envConfig
+from .server import envConfig
 from .route import Root
 
 # wsgi interface

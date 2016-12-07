@@ -5,6 +5,8 @@ class ParameterError(Exception):
 		self.code=code
 		self.message=message
 		Exception.__init__(self, *args, **kwargs)
+	def __str__(self):
+		return self.message
 
 class Parameter(object):
 	def __init__(self, value, code=400, name='parameter', message='{raw} is wrong value for {name}'):
@@ -27,14 +29,18 @@ class Parameter(object):
 		return True
 	def error(self, code=None, message=None):
 		raise ParameterError(
-			code if code is not None else self.code(),
-			message if message is not None else str(self.message()).format(name=self.name(), raw=self.raw()))
+			code if code else self.code(),
+			message if message else str(self.message()).format(name=self.name(), raw=self.raw()))
 	def value(self):
 		if not self.valid(): self.error()
 		return self._value.value() if isinstance(self._value, Parameter) else self._value
 
 
-
+class NonFalse(Parameter):
+	def message(self):
+		return '{name} must be non-null'
+	def valid(self):
+		return True if self.raw() else False
 
 class Noneable(Parameter):
 	def value(self):

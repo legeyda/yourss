@@ -106,9 +106,10 @@ class YdlFileSize(object):
 
 
 class Feed(object):
-	def __init__(self, yourss_base_url, base_url, clip_base_url,
-	             url, match_title=None, ignore_title=None, page_index=1, page_size=10,
-	             media_type='video', quality='high', format=None, link_type='direct'):
+	def __init__(self, yourss_base_url, base_url, clip_base_url, url,
+	             match_title=None, ignore_title=None, page_index=1, page_size=10,
+	             media_type='video', quality='high', format=None, link_type='direct',
+	             title=None, thumbnail=None):
 		self.yourss_base_url=yourss_base_url
 		self.base_url=base_url
 		self.clip_base_url=clip_base_url
@@ -121,7 +122,8 @@ class Feed(object):
 		self.quality=quality
 		self.format=format
 		self.link_type=link_type
-
+		self.title=title
+		self.thumbnail=thumbnail
 	def get_ydl_opts(self):
 		return { 'noplaylist': False, 'forcejson': True, 'skip_download': True,
 		         'matchtitle': self.match_title, 'rejecttitle': self.ignore_title,
@@ -136,28 +138,30 @@ class Feed(object):
 		return reduce(lambda a, b: a+b, self.generate())
 
 	def generate(self):
-		episode_params=YourssUrlParams(self.media_type, self.quality, self.format)
-
-		feed_query={'url': self.url}
-		feed_query.update(episode_params.as_dict())
-
-		feed_data={
-			'url': self.url,
-			'date': DateRfc822D(datetime.now()),
-			'yourss_url': self.yourss_base_url,
-			'yourss_feed_url': YourssUrlText(self.base_url, self.url, self.media_type, self.quality, self.format).text(),
-			#'thumbnail': Episode(self.url, self.media_type, self.quality, self.format).thumbnail()
-		}
-		yield PystacheArtifact('rss-header.mustache', feed_data).text()
+		once_flag=True
 		for line in StdoutRedirector(self._action):
 			if not line.startswith('{'): continue
 			item = json.loads(line)
+
+			# generate header
+			if once_flag:
+				once_flag=False
+				feed_data = {
+					'url': self.url,
+					'date': DateRfc822D(datetime.now()),
+					'yourss_url': self.yourss_base_url,
+					'yourss_feed_url': YourssUrlText(self.base_url, self.url, self.media_type, self.quality, self.format).text(),
+					'thumbnail': self.thumbnail,
+					'title': self.title if self.title else item['playlist_title'] if 'playlist_title' in item else 'Episodes from ' + self.url
+				}
+				yield PystacheArtifact('rss-header.mustache', feed_data).text()
+
 			try:
 				item['url']=EpisodeLink(self.clip_base_url, item, self.media_type, self.quality, self.format, self.link_type).text()
 			except Exception as e:
 				logging.getLogger(__name__).error('unable to generate url', e)
 				continue
-			item['upload_date']=DateRfc822D(item.get('upload_date'))
+			item['upload_date']=DateRfc822D(item.get('upload_date')).text()
 			item['mimetype']='audio/' + item.get('ext', 'webm') if self.media_type=='audio' else 'video/' + item.get('ext', 'mp4')
 			item['yourss_url']=self.base_url
 			if 'tags' in  item:

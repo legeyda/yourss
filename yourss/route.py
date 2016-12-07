@@ -69,7 +69,8 @@ class Feed(object):
 		self.clip_base_url=clip_base_url
 	@cherrypy.expose
 	def index(self, url, match_title=None, ignore_title=None,  page_index=1, page_size=10,
-	          media_type='video', quality='high', format=None, link_type='direct'):
+	          media_type='video', quality='high', format=None, link_type='direct',
+	          title=None, thumbnail=None):
 		cherrypy.response.headers['Content-Type']='text/xml'
 		try:
 			return YoutubeFeed(
@@ -85,6 +86,8 @@ class Feed(object):
 			    quality=Quality(quality).value(),
 			    format=format,
 				link_type=LinkType(link_type).value(),
+				title=title,
+				thumbnail=thumbnail
 			).generate()
 		except ParameterError as e:
 			return Response(e.code, e.message)

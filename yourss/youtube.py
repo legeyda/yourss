@@ -139,6 +139,15 @@ class Feed(object):
 
 	def generate(self):
 		once_flag=True
+		feed_data = {
+			'url': self.url,
+			'date': DateRfc822D(datetime.now()),
+			'yourss_url': self.yourss_base_url,
+			'yourss_feed_url': YourssUrlText(self.base_url, self.url, self.media_type, self.quality,
+			                                 self.format).text(),
+			'thumbnail': self.thumbnail,
+			'title': None
+		}
 		for line in StdoutRedirector(self._action):
 			if not line.startswith('{'): continue
 			item = json.loads(line)
@@ -146,16 +155,8 @@ class Feed(object):
 			# generate header
 			if once_flag:
 				once_flag=False
-				feed_data = {
-					'url': self.url,
-					'date': DateRfc822D(datetime.now()),
-					'yourss_url': self.yourss_base_url,
-					'yourss_feed_url': YourssUrlText(self.base_url, self.url, self.media_type, self.quality, self.format).text(),
-					'thumbnail': self.thumbnail,
-					'title': self.title if self.title else item['playlist_title'] if 'playlist_title' in item else 'Episodes from ' + self.url
-				}
+				feed_data['title']=self.title if self.title else item['playlist_title'] if 'playlist_title' in item else 'Episodes from ' + self.url
 				yield PystacheArtifact('rss-header.mustache', feed_data).text()
-
 			try:
 				item['url']=EpisodeLink(self.clip_base_url, item, self.media_type, self.quality, self.format, self.link_type).text()
 			except Exception as e:
@@ -168,6 +169,10 @@ class Feed(object):
 				item['tag_str']=','.join(item['tags'])
 			item['filesize']=YdlFileSize(item).value()
 			yield PystacheArtifact('rss-item.mustache', item).text()
+		if once_flag:
+			if not feed_data['title']:
+				feed_data['title']=self.title if self.title else 'Episodes from ' + self.url
+			yield PystacheArtifact('rss-header.mustache', feed_data).text()
 		yield PystacheArtifact('rss-footer.mustache', feed_data).text()
 
 

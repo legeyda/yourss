@@ -27,7 +27,7 @@ function download() {
 	fi
 
 	if [ -n "$SIZE" ]; then
-		if [ $(getsize "$OUTPUT") != $SIZE ]; then
+		if [ $(stat -c%s "$OUTPUT") != $SIZE ]; then
 			echo "size differs after download, it was unsuccessfull"
 			return 1
 		fi
@@ -36,25 +36,26 @@ function download() {
 
 #
 SELFDIR=$(dirname "$0")
-PYTHON_HOME="$SELFDIR/.python/miniconda/envs/default"
+ROOT="$SELFDIR/.python/linux"
+PYTHON_HOME="$ROOT/miniconda/envs/default"
 
 # requirements
 if [ ! -f "$PYTHON_HOME/bin/activate" ]; then
     # install
-    if [ ! -d "$SELFDIR/.python/miniconda" ]; then
-        mkdir -p "$SELFDIR/.python/temp"
-        download https://repo.continuum.io/miniconda/Miniconda3-4.2.12-Linux-x86.sh "$SELFDIR/.python/temp/miniconda-installer.sh" 29051880
+    if [ ! -d "$ROOT/miniconda" ]; then
+        mkdir -p "$ROOT/temp"
+        download https://repo.continuum.io/miniconda/Miniconda3-4.2.12-Linux-x86.sh "$ROOT/temp/miniconda-installer.sh" 29051880
 
-        echo "miniconda is to be installed into $SELFDIR/.python/miniconda"
-        bash "$SELFDIR/.python/temp/miniconda-installer.sh" -b -p "$SELFDIR/.python/miniconda"
+        echo "miniconda is to be installed into $ROOT/miniconda"
+        bash "$ROOT/temp/miniconda-installer.sh" -b -p "$ROOT/miniconda"
     fi
 
     echo "virtual environment is to be installed into $PYTHON_HOME"
-    echo y | "$SELFDIR/.python/miniconda/bin/conda" create --name default pip
+    echo y | "$ROOT/miniconda/bin/conda" create --name default pip
 fi
 
 
-source "$SELFDIR/.python/miniconda/bin/activate" default
+source "$ROOT/miniconda/bin/activate" default
 if [ -f requirements.txt ]; then
 	PIP_INSTALL_OUTPUT=$("$PYTHON_HOME/bin/pip" install -r ./requirements.txt)
 	RESULT_CODE=$?

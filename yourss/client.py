@@ -18,7 +18,7 @@ class Arguments(object):
 		parser.add_argument('--media-type',   '-t', type=str,  help='', choices=['audio', 'video'], default='video')
 		parser.add_argument('--quality',      '-q', type=str,  help='', choices=['high', 'low'], default='high')
 		parser.add_argument('--format',       '-f', type=str,  help='', default=None)
-		parser.add_argument('--link-type',    '-l', type=str,  help='', choices=['dir    zect', 'webpage', 'proxy'], default='direct')
+		parser.add_argument('--link-type',    '-l', type=str,  help='', choices=['direct', 'webpage', 'proxy'], default='direct')
 		parser.add_argument('--title',              type=str,  help='', default=None)
 		parser.add_argument('--thumbnail',          type=str,  help='', default=None)
 		parser.add_argument('--output',       '-o', type=str,  help='output file, - for stdout', default='-')

@@ -10,3 +10,6 @@ MANIFEST
 .idea
 *.pyc
 *.sublime-*
+
+# other
+.python

@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+## downloads URl to file OUTPUT
+## download is skipped if file SIZE is supplied and file exists and size matches
+function download() {
+	URL=$1
+	OUTPUT=$2
+	SIZE=$3
+
+	if [ -n "$SIZE" -a -f "$OUTPUT" ]; then
+		if [ $(stat -c%s "$OUTPUT") == "$SIZE" ]; then
+			echo "$OUTPUT already downloaded, size matched"
+			return 0
+		else
+			echo "$OUTPUT size differs redownloading from $URL..."
+		fi
+	fi
+
+	mkdir -p $(dirname "$OUTPUT")
+	if which curl; then
+		curl --location --output "$OUTPUT" "$URL"
+	elif which wget; then
+		wget "--output-document=$OUTPUT" "$URL"
+	else
+		echo "unable to download $1 neither wget nor curl found"
+		exit 1
+	fi
+
+	if [ -n "$SIZE" ]; then
+		if [ $(getsize "$OUTPUT") != $SIZE ]; then
+			echo "size differs after download, it was unsuccessfull"
+			return 1
+		fi
+	fi
+}
+
+#
+SELFDIR=$(dirname "$0")
+PYTHON_HOME="$SELFDIR/.python/miniconda/envs/default"
+
+# requirements
+if [ ! -f "$PYTHON_HOME/bin/activate" ]; then
+    # install
+    if [ ! -d "$SELFDIR/.python/miniconda" ]; then
+        mkdir -p "$SELFDIR/.python/temp"
+        download https://repo.continuum.io/miniconda/Miniconda3-4.2.12-Linux-x86.sh "$SELFDIR/.python/temp/miniconda-installer.sh" 29051880
+
+        echo "miniconda is to be installed into $SELFDIR/.python/miniconda"
+        bash "$SELFDIR/.python/temp/miniconda-installer.sh" -b -p "$SELFDIR/.python/miniconda"
+    fi
+
+    echo "virtual environment is to be installed into $PYTHON_HOME"
+    echo y | "$SELFDIR/.python/miniconda/bin/conda" create --name default pip
+fi
+
+
+source "$SELFDIR/.python/miniconda/bin/activate" default
+if [ -f requirements.txt ]; then
+	PIP_INSTALL_OUTPUT=$("$PYTHON_HOME/bin/pip" install -r ./requirements.txt)
+	RESULT_CODE=$?
+	if [ 0 != $RESULT_CODE ]; then
+		echo "$PIP_INSTALL_OUTPUT"
+		exit $RESULT_CODE
+	fi
+fi
+
+
+"$PYTHON_HOME/bin/python" "$@"

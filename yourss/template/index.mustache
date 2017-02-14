@@ -21,6 +21,40 @@
             font-size: 150%;
 		}
 	</style>
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js"
+	        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+	        crossorigin="anonymous"></script>
+	<script type="text/javascript">
+		default_values={
+			title: null, thumbnail: null,
+			match_title: null, ignore_title: null,
+			page_index: '1', page_size: '10', link_style: 'direct',
+			media_type: 'video', quality: 'high', format: null
+		};
+		// do not send fields which are not required 
+		// and either empty or equal to default value
+		$(document).ready(function() {
+			$('#form').submit(function() {
+				found=$(this).find('input,select').filter(function() {
+					$this=$(this)
+					if($this.prop('disabled') || $this.prop('required')) {
+						return false;
+					}
+					if(!$this.prop('value') && ($this.prop('name') in default_values)) {
+						return true;
+					}
+					if(!!$this.prop('value') && $this.prop('value') == default_values[$this.prop('name')]) {
+						return true;
+					}
+					return false;
+				})
+				found.prop('disabled', 'disabled');
+				setTimeout(function() {
+					found.prop('disabled', false)
+				});
+			});
+		});
+	</script>
 </head>
 <body>
 
@@ -43,7 +77,7 @@
 
 	<p>Fill in the form below to get your feed.</p>
 
-	<form action="api/v1/feed" method="GET">
+	<form id="form" action="api/v1/feed" method="GET">
 
 		<table width="30em">
 			<tbody>

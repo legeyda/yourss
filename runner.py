@@ -6,6 +6,9 @@ def main(*args):
 	elif len(args)>0 and "client" == args[0]:
 		from yourss.client import main
 		main(*args[1:])
+	elif len(args) > 0 and "gui" == args[0]:
+		from yourss.gui import main
+		main(*args[1:])
 	elif len(args)>0 and "test" == args[0]:
 		from unittest import main
 		main(module='testyourss')

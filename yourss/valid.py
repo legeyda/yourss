@@ -13,6 +13,8 @@ class ParameterException(Exception):
 	def __init__(self, message, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.message=message
+	def __str__(self):
+		return str(self.message)
 
 class Parameter(object):
 	"""parameter interface"""
@@ -55,8 +57,9 @@ class BaseParameter(Parameter):
 		self._data=ParameterWrapper(data) if isinstance(data, Parameter) else ValidValue(data)
 	def data(self): return self._data
 	def value(self): return self.data().value()
+	def const_message(self): return PystacheArtifact('wrong value for {{#title}}parameter {{title}}{{/title}}{{^title}}parameter{{/title}}')
 	def throw(self, message, exception_type=ParameterException, *args, **kwargs):
-		raise exception_type(message, *args, **kwargs)
+		raise exception_type(self.const_message(), exception_type, *args, **kwargs)
 
 class CheckingBaseParameter(BaseParameter):
 	"""to avoid stack overflow, must override either valid or message"""
@@ -65,9 +68,8 @@ class CheckingBaseParameter(BaseParameter):
 		if not self.valid(): return self.const_message()
 	def valid_value(self, exception_type=ParameterException, *args, **kwargs):
 		message=self.message()
-		if message: self.throw(message)
+		if message: self.throw(exception_type, *args, **kwargs)
 		return self.value()
-	def const_message(self): return PystacheArtifact('wrong value for {{title}}{{^title}}parameter{{/title}}')
 
 class TransformingBaseParameter(BaseParameter):
 	def valid(self):
@@ -88,22 +90,25 @@ class IntegerParameter(TransformingBaseParameter):
 	def default_message(self):
 		return PystacheArtifact('{{title}}{{^title}}value{{/title}} should be integer')
 	def valid_value(self, exception_type=ParameterException, *args, **kwargs):
-		try: return int(self.value())
-		except ValueError: self.throw(exception_type, *args, **kwargs)
-		
+		value=self.value()
+		try: return int(value)
+		except Exception: self.throw(exception_type, *args, **kwargs)
+
 class PositiveIntegerParameter(TransformingBaseParameter):
 	def default_message(self):
 		return PystacheArtifact('{{title}}{{^title}}value{{/title}} should be positive')
 	def valid_value(self, exception_type=ParameterException, *args, **kwargs):
-		result=IntegerParameter(self.value()).valid_value(exception_type, *args, **kwargs)
+		result=IntegerParameter(self.data().valid_value()).valid_value(exception_type, *args, **kwargs)
 		if result < 1: self.throw(exception_type, *args, **kwargs)
 		return result
 
 class BooleanParameter(TransformingBaseParameter):
+	def default_message(self):
+		return PystacheArtifact('{{title}}{{^title}}value{{/title}} does not look like boolean')
 	def valid_value(self, exception_type=ParameterException, *args, **kwargs):
 		if   self.data().valid_value() in [True,  1, 'True',  'true',  'yes', '+', 'ok',  '1']: return True
 		elif self.data().valid_value() in [False, 0, 'False', 'false', 'no',  '-', 'nie', '0']: return False
-		else: self.throw('{{title}}{{^title}}value{{/title}} does not look like boolean')
+		else: self.throw(exception_type, *args, **kwargs)
 
 class StringParameter(TransformingBaseParameter):
 	def valid_value(self, exception_type=ParameterException, *args, **kwargs):
@@ -182,11 +187,13 @@ class FunctionParameters(TransformingBaseParameter):
 	def valid_value(self, exception_type=ParameterException, *args, **kwargs):
 		messages = []
 		def mapper(param):
-			try: return param.valid_value()
+			try:
+				return param.valid_value()
 			except ParameterException as e:
 				messages.append(e.message)
 		result=self.data().value().map(mapper)
-		if messages: raise exception_type(JoinedPystacheArtifacts(', ', messages))
+		if messages:
+			raise exception_type(JoinedPystacheArtifacts(', ', *messages))
 		return result
 
 
@@ -230,8 +237,8 @@ class YourssServerParameters(FunctionParameters):
 			host=host_parameter,
 			port=port_parameter,
 			debug=DebugParameter(debug),
-			base_url=DefaultFactoryValuedParameter(YourssBaseUrlParameter(base_url),
-				default_value_factory=lambda: 'http://' + str(host_parameter.valid_value()) + ':' + str(port_parameter.valid_value()))
+			base_url=TitledParameter(DefaultFactoryValuedParameter(YourssBaseUrlParameter(base_url),
+				default_value_factory=lambda: 'http://' + str(host_parameter.valid_value()) + ':' + str(port_parameter.valid_value())), title='base url')
 		))
 
 

@@ -35,13 +35,16 @@ class YourssServer(object):
 			'engine.autoreload.on': False})
 		cherrypy.quickstart(Root(self._base_url))
 
+def get_env_config():
+	return config_from_env(
+		host=('YOURSS_HOST', 'HOST'),
+		port=('YOURSS_PORT', 'PORT'),
+		debug=('YOURSS_DEBUG', 'DEBUG'),
+		base_url=('YOURSS_BASE_URL', 'BASE_URL'),
+		log_level=('YOURSS_LOG_LEVEL', 'LOG_LEVEL'))
+
 def main(*args):
-	config=config_from_env(
-		host      = ('HOST',      'YOURSS_HOST'),
-		port      = ('PORT',      'YOURSS_PORT'),
-		debug     = ('DEBUG',     'YOURSS_DEBUG'),
-		base_url  = ('BASE_URL',  'YOURSS_BASE_URL'),
-		log_level = ('LOG_LEVEL', 'YOURSS_LOG_LEVEL'))
+	config=get_env_config()
 	config.update(Arguments(args).parse())
 	logging.basicConfig(level=logging._nameToLevel.get(config['log_level'], logging.WARNING),
 	                    handlers=[logging.StreamHandler()])

@@ -61,18 +61,18 @@ def generate_feed(base_url, url,
 
 def main(*args):
 	config=config_from_env(
-		url          = ('URL', 'YOURSS_URL'),
-		match_title  = ('MATCH_TITLE', 'YOURSS_MATCH_TITLE'),
-		ignore_title = ('IGNORE_TITLE', 'YOURSS_IGNORE_TITLE'),
-		page_index   = ('PAGE_INDEX', 'YOURSS_PAGE_INDEX'),
-		page_size    = ('PAGE_SIZE', 'YOURSS_PAGE_SIZE'),
-		media_type   = ('MEDIA_TYPE', 'YOURSS_MEDIA_TYPE'),
-		quality      = ('QUALITY', 'YOURSS_QUALITY'),
-		format       = ('FORMAT', 'YOURSS_FORMAT'),
-		link_type    = ('LINK_TYPE', 'YOURSS_LINK_TYPE'),
-		title        = ('TITLE', 'YOURSS_TITLE'),
-		thumbnail    = ('THUMBNAIL', 'YOURSS_THUMBNAIL'),
-		output       = ('OUTPUT', 'YOURSS_OUTPUT')
+		url          = ('YOURSS_URL', 'URL'),
+		match_title  = ('YOURSS_MATCH_TITLE', 'MATCH_TITLE'),
+		ignore_title = ('YOURSS_IGNORE_TITLE', 'IGNORE_TITLE'),
+		page_index   = ('YOURSS_PAGE_INDEX', 'PAGE_INDEX'),
+		page_size    = ('YOURSS_PAGE_SIZE', 'PAGE_SIZE'),
+		media_type   = ('YOURSS_MEDIA_TYPE', 'MEDIA_TYPE'),
+		quality      = ('YOURSS_QUALITY', 'QUALITY'),
+		format       = ('YOURSS_FORMAT', 'FORMAT'),
+		link_type    = ('YOURSS_LINK_TYPE', 'LINK_TYPE'),
+		title        = ('YOURSS_TITLE', 'TITLE'),
+		thumbnail    = ('YOURSS_THUMBNAIL', 'THUMBNAIL'),
+		output       = ('YOURSS_OUTPUT', 'OUTPUT')
 	)
 	config.update(CommandLineArguments(args).parse())
 	feed=FeedParameters(**without_keys(config, 'output')).valid_value().apply(Feed)

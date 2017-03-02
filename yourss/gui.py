@@ -298,7 +298,7 @@ class Application(VBox):
 		)
 
 	def run(self):
-		arguments=None
+		#arguments=None
 		try: arguments=self.get_parameters().valid_value()
 		except ParameterException as e: messagebox.showerror('Wrong parameters', str(e.message))
 		else:

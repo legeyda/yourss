@@ -24,14 +24,35 @@ class PypathTextFile(TextFile):
 	def __init__(self, *parts):
 		TextFile.__init__(self, join(dirname(abspath(__file__)), *parts))
 
-class PystacheArtifact(Text):
-	def __init__(self, *args):
-		self.parts=args[:-1]
-		self.context={}
-		self.context.update(args[-1])
-		self.context['YOURSS_VERSION']=VERSION
+class PystacheFileTemplate(PypathTextFile):
+	def __init__(self, *parts):
+		super().__init__(*(['template'] + list(parts)[:-1] + [(parts[-1] + '.mustache')]))
+
+class ParameterizedText(Text):
+	def with_context(self, **context):
+		pass
+
+class PystacheArtifact(ParameterizedText):
+	def __init__(self, template, **context):
+		self._template=template
+		self._context={'YOURSS_VERSION': VERSION}
+		self._context.update(context)
+	def with_context(self, **context):
+		new_context={}
+		new_context.update(self._context)
+		new_context.update(context)
+		return PystacheArtifact(self._template, **new_context)
 	def text(self):
-		return render(PypathTextFile('template', *self.parts).text(), self.context)
+		return render(str(self._template), self._context)
+
+class JoinedPystacheArtifacts(ParameterizedText):
+	def __init__(self, separator, *artifacts):
+		self._separator=separator
+		self._artifacts=artifacts
+	def with_context(self, **context):
+		self._artifacts=[a.with_context(context) for a in self._artifacts]
+	def text(self):
+		return str(self._separator).join([a.text() for a in self._artifacts])
 
 class UrlText(Text):
 	def __init__(self, *parts):
@@ -55,7 +76,8 @@ class UrlQuery(Text):
 	def text(self):
 		parts=[]
 		for key in sorted(self.params.keys()):
-			parts.append(str(key) + '=' + UrlEscape(str(self.params[key])).text())
+			if self.params[key]:
+				parts.append(str(key) + '=' + UrlEscape(str(self.params[key])).text())
 		string='&'.join(parts)
 		return '?' + string if string else ''
 

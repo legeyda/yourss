@@ -10,7 +10,7 @@ setup(
     keywords = 'rss youtube youtube-dl ',
     author = 'legeyda',
     author_email = '',
-    maintainer = '',
+    maintainer = 'legeyda',
     maintainer_email = '',
     url = 'http://github.com/legeyda/yourss',
     dependency_links = [str(r.req) for r in parse_requirements(join(dirname(__file__), 'requirements.txt'), session=False)],

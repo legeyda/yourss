@@ -1,23 +1,15 @@
-
+from yourss.client import FileWriter
+from yourss.youtube import Feed
 from . import client
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+from .valid import default_feed_parameter_values, FeedParameters, ParameterException, OutputParameter
+
 
 def dict_ensure(data, key, default_value=None):
 	"""ensure that dict contains key, sets default_value if needed, and returns value"""
 	if not key in data: data[key]=default_value
 	return data[key]
-
-# deprecated
-class Params(object):
-	def __init__(self, *args, **kwargs):
-		self.args=args
-		self.kwargs=kwargs
-	def apply(self, func, *args, **kwargs):
-		new_kwargs={}
-		new_kwargs.update(self.kwargs)
-		new_kwargs.update(kwargs)
-		func(*(args+self.args), **new_kwargs)
 
 # abstract widget, adds create_child method to create and immediately grid crated widget, acestors should implement grid_child_at
 class Box(ttk.Frame):
@@ -251,19 +243,19 @@ class Application(VBox):
 		self.ignore_title = self.add_param_hide_frame.create_child(LabeledEntry, sticky=tk.E+tk.W, label='Ignore titles regular expression', change=self.validate)
 
 		self.page       = self.add_param_hide_frame.create_child(HBox, sticky=tk.E+tk.W+tk.N+tk.S)
-		self.page_size  = self.page.create_child(LabeledEntry, entry_constructor=ValuedIntEntry, sticky=tk.E+tk.W, label='Page Size', value=10, change=self.validate)
-		self.page_index = self.page.create_child(LabeledEntry, entry_constructor=ValuedIntEntry, sticky=tk.E+tk.W, label='Page Index', value=1, change=self.validate)
+		self.page_size  = self.page.create_child(LabeledEntry, entry_constructor=ValuedIntEntry, sticky=tk.E+tk.W, label='Page Size', value=default_feed_parameter_values['page_size'], change=self.validate)
+		self.page_index = self.page.create_child(LabeledEntry, entry_constructor=ValuedIntEntry, sticky=tk.E+tk.W, label='Page Index', value=default_feed_parameter_values['page_index'], change=self.validate)
 
 		link_styles=[
 			("direct",  'Direct link to video extracted by youtube_dl'),
 			("webpage", 'Link to webpage containing episode'),
 			("proxy",   'Link to yourss proxy')
 		]
-		self.link_style = self.add_param_hide_frame.create_child(LabeledEntry, sticky=tk.E+tk.W, entry_constructor=ValuedOptionMenu, entry_kwargs={'items': link_styles, 'value': 'direct'}, change=self.validate)
+		self.link_style = self.add_param_hide_frame.create_child(LabeledEntry, sticky=tk.E+tk.W, entry_constructor=ValuedOptionMenu, entry_kwargs={'items': link_styles, 'value': default_feed_parameter_values['link_type']}, change=self.validate)
 
 		format          = self.add_param_hide_frame.create_child(HBox, sticky=tk.E+tk.W+tk.N+tk.S)
-		self.media_type = format.create_child(LabeledEntry, sticky=tk.E+tk.W, entry_constructor=ValuedOptionMenu, entry_kwargs={'items': [('video', 'Video'), ('audio', 'Audio')], 'value': 'audio'}, change=self.validate)
-		self.quality    = format.create_child(LabeledEntry, sticky=tk.E+tk.W, entry_constructor=ValuedOptionMenu, entry_kwargs={'items': [('low', 'Low'), ('high', 'High')], 'value': 'high'}, change=self.validate)
+		self.media_type = format.create_child(LabeledEntry, sticky=tk.E+tk.W, entry_constructor=ValuedOptionMenu, entry_kwargs={'items': [('video', 'Video'), ('audio', 'Audio')], 'value': default_feed_parameter_values['media_type']}, change=self.validate)
+		self.quality    = format.create_child(LabeledEntry, sticky=tk.E+tk.W, entry_constructor=ValuedOptionMenu, entry_kwargs={'items': [('low', 'Low'), ('high', 'High')], 'value':default_feed_parameter_values['quality']}, change=self.validate)
 
 		self.format = self.add_param_hide_frame.create_child(LabeledEntry, sticky=tk.E+tk.W, label="youtube_dl format (see youtube_dl's format manual):")
 
@@ -282,20 +274,14 @@ class Application(VBox):
 			self.add_param_hide_frame.grid_remove()
 
 	def is_form_ok(self):
-		if not self.url.get_value(): return False
-		if not self.output.get_value(): return False
-		if not self.page_size.get_value()>0: return False
-		if not self.page_index.get_value()>0: return False
-		if 'proxy'==self.link_style.get_value() and not self.base_url.get_value(): return False
-		return True
+		return not self.get_parameters().message()
 
 	def validate(self, *args, **kwargs):
 		if 'run_button' in self.__dict__:
 			self.run_button['state']='normal' if self.is_form_ok() else 'disabled'
 
-	def run(self):
-		args=(
-			self.base_url.get_value(),
+	def get_parameters(self):
+		return FeedParameters(
 			self.url.get_value(),
 			self.match_title.get_value(),
 			self.ignore_title.get_value(),
@@ -307,12 +293,21 @@ class Application(VBox):
 			self.link_style.get_value(),
 			self.title.get_value(),
 			self.thumbnail.get_value(),
-			self.output.get_value()
+			self.base_url.get_value(),
+			None, None
 		)
-		try:
-			client.run(*args)
-		except Exception as e:
-			messagebox.showerror('Error', e.message)
+
+	def run(self):
+		arguments=None
+		try: arguments=self.get_parameters().valid_value()
+		except ParameterException as e: messagebox.showerror('Wrong parameters', str(e.message))
+		else:
+			try: feed=arguments.apply(Feed)
+			except Exception as e: messagebox.showerror('Error initializing feed parser', str(e))
+			else:
+				try: FileWriter(OutputParameter(self.output.get_value()).valid_value()).consume(feed.generate())
+				except Exception as e: messagebox.showerror('Error writing', str(e))
+
 
 
 def run():

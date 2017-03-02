@@ -29,7 +29,7 @@
 			title: null, thumbnail: null,
 			match_title: null, ignore_title: null,
 			page_index: '1', page_size: '10', link_style: 'direct',
-			media_type: 'video', quality: 'high', format: null
+			media_type: 'audio', quality: 'low', format: null
 		};
 		// do not send fields which are not required 
 		// and either empty or equal to default value
@@ -144,16 +144,16 @@
 				<td colspan="1">
 					<label>Media type<br/>
 						<select id="media_type" name="media_type">
-							<option selected="selected">video</option>
-							<option>audio</option>
+							<option selected="selected">audio</option>
+							<option>video</option>
 						</select>
 					</label>
 				</td>
 				<td colspan="1">
 					<label>Quality<br/>
 						<select id="quality" name="quality">
-							<option selected="selected">high</option>
-							<option>low</option>
+							<option selected="selected">low</option>
+							<option>high</option>
 						</select>
 					</label>
 				</td>

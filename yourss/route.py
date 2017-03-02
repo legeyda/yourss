@@ -1,15 +1,15 @@
 import cherrypy
 
-from yourss.text import UrlText, PystacheArtifact
-from yourss.valid import Noneable, ParameterError, Quality, PageIndex, PageSize, MediaType, LinkType, MatchTitle, IgnoreTitle
-from yourss.youtube import Episode as YoutubeEpisode
+from yourss.text import UrlText, PystacheArtifact, PystacheFileTemplate
+from yourss.valid import ParameterException
+from yourss.valid import FeedParameters, EpisodeParameters
 from yourss.youtube import Feed as YoutubeFeed
-
+from yourss.youtube import Episode as YoutubeEpisode
 
 def Response(code, message):
 	cherrypy.response.status = code
 	cherrypy.response.headers['Content-Type'] = 'text/plain'
-	return message
+	return str(message)
 
 class Route(object):
 	def __init__(self, prefix, controller):
@@ -38,78 +38,52 @@ class Router(object):
 				route.pop_all(vpath)
 				return route.controller
 
-
-
-
 class Episode(object):
 	def __init__(self, yourss_base_url, base_url):
 		self.yourss_base_url=yourss_base_url
 		self.base_url=base_url
 	@cherrypy.expose
-	def index(self, url, media_type='video', quality='high', format_=None):
-		youtube_video=YoutubeEpisode(
-			url,
-			media_type=MediaType(media_type).value(),
-			quality=Quality(quality).value(),
-			format_=format_,)
-		cherrypy.response.headers['Content-Type'] = youtube_video.mimetype()
-		cherrypy.response.headers['Content-Disposition'] = 'attachment; filename="' + youtube_video.filename() + '"'
-		filesize=youtube_video.filesize()
-		if filesize:
-			cherrypy.response.headers['Content-Length'] = str(filesize)
-		return youtube_video.generate()
-
-
-
+	def index(self, url, media_type='video', quality='high', format=None):
+		try: arguments=EpisodeParameters(url, media_type=media_type, quality=quality, format=format).valid_value()
+		except ParameterException as e: return Response(400, e.message)
+		episode=arguments.apply(YoutubeEpisode)
+		cherrypy.response.headers['Content-Type'] = episode.mimetype()
+		cherrypy.response.headers['Content-Disposition'] = 'attachment; filename="' + episode.filename() + '"'
+		filesize = episode.filesize()
+		if filesize: cherrypy.response.headers['Content-Length']=str(filesize)
+		return episode.generate()
+	index._cp_config = {'response.stream': True}
 
 class Feed(object):
-	def __init__(self, yourss_base_url, base_url, clip_base_url):
+	def __init__(self, yourss_base_url, feed_base_url, episode_base_url):
 		self.yourss_base_url=yourss_base_url
-		self.base_url=base_url
-		self.clip_base_url=clip_base_url
+		self.feed_base_url=feed_base_url
+		self.episode_base_url=episode_base_url
 	@cherrypy.expose
 	def index(self, url, match_title=None, ignore_title=None,  page_index=1, page_size=10,
-	          media_type='video', quality='high', format=None, link_type='direct',
+	          media_type='audio', quality='low', format=None, link_type='direct',
 	          title=None, thumbnail=None):
 		cherrypy.response.headers['Content-Type']='text/xml'
 		try:
-			return YoutubeFeed(
-			    yourss_base_url=self.yourss_base_url,
-			    base_url=self.base_url,
-			    clip_base_url=self.clip_base_url,
-				url=url,
-				match_title=MatchTitle(match_title, name='match_title').value(),
-				ignore_title=IgnoreTitle(ignore_title, name='ignore_title').value(),
-				page_index=PageIndex(page_index).value(),
-				page_size=PageSize(page_size).value(),
-			    media_type=MediaType(media_type).value(),
-			    quality=Quality(quality).value(),
-			    format=format,
-				link_type=LinkType(link_type).value(),
-				title=title,
-				thumbnail=thumbnail
-			).generate()
-		except ParameterError as e:
-			return Response(e.code, e.message)
-
-
-
+			feed_parameters=FeedParameters(
+				url=url, match_title=match_title, ignore_title=ignore_title, page_index=page_index, page_size=page_size,
+				media_type=media_type, quality=quality, format=format, link_type=link_type,
+				title=title, thumbnail=thumbnail,
+				yourss_base_url=self.yourss_base_url, feed_base_url=self.feed_base_url, clip_base_url=self.episode_base_url).valid_value()
+		except ParameterException as e:
+			return Response(400, e.message)
+		return feed_parameters.apply(YoutubeFeed).generate()
 
 class Yourss(Router):
 	def __init__(self, yourss_base_url, base_url):
 		self.yourss_base_url=yourss_base_url
 		self.base_url=base_url
-		Router.__init__(self,
-			Route('feed', Feed(
-					yourss_base_url=self.yourss_base_url,
-					base_url=UrlText(self.base_url, 'feed').text(),
-					clip_base_url=UrlText(self.base_url, 'episode').text())),
-			Route('episode', Episode(
-					yourss_base_url=self.yourss_base_url,
-					base_url=UrlText(self.base_url, 'episode').text()))
-		)
-
-
+		feed=Feed(yourss_base_url=self.yourss_base_url,
+				  feed_base_url=UrlText(self.base_url, 'feed').text(),
+				  episode_base_url=UrlText(self.base_url, 'episode').text())
+		episode=Episode(yourss_base_url=self.yourss_base_url,
+		                base_url=UrlText(self.base_url, 'episode').text())
+		Router.__init__(self, Route('feed', feed), Route('episode', episode))
 
 class Root(Router):
 	def __init__(self, base_url):
@@ -118,4 +92,4 @@ class Root(Router):
 		Router.__init__(self, Route(parts, Yourss(self.base_url, base_url=UrlText(self.base_url, *parts).text())))
 	@cherrypy.expose
 	def index(self):
-		return PystacheArtifact('index.mustache', {'BASE_URL': self.base_url}).text()
+		return PystacheArtifact(PystacheFileTemplate('index'), BASE_URL=self.base_url).text()

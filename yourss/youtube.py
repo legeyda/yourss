@@ -140,7 +140,7 @@ class Feed(object):
 		self.episode_base_url = episode_base_url
 	def get_ydl_opts(self):
 		return { 'noplaylist': False, 'forcejson': True, 'skip_download': True,
-		         'matchtitle': self.match_title, 'rejecttitle': self.ignore_title,
+		         'matchtitle': self.match_title, 'rejecttitle': self.ignore_title, 'ignoreerrors': True,
 		         'playliststart': (self.page_index-1)*self.page_size+1, 'playlistend': self.page_index*self.page_size,
 		         'format': YdlFormat(self.media_type, self.quality, self.format).text() }
 

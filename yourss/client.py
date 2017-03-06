@@ -31,7 +31,7 @@ class FileWriter(object):
 		import sys
 		output=None
 		try:
-			# todo create dirs
+			# todo create dirs os.makedirs(os.path.dirname(self.file_name))
 			output = sys.stdout.buffer if '-' == self.file_name else open(self.file_name, 'wb')
 			was_error=False
 			for chunk in iterable:

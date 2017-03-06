@@ -54,7 +54,7 @@ class TitledParameter(ParameterWrapper):
 
 class BaseParameter(Parameter):
 	def __init__(self, data):
-		self._data=ParameterWrapper(data) if isinstance(data, Parameter) else ValidValue(data)
+		self._data=data if isinstance(data, Parameter) else ValidValue(data)
 	def data(self): return self._data
 	def value(self): return self.data().value()
 	def const_message(self): return PystacheArtifact('wrong value for {{#title}}parameter {{title}}{{/title}}{{^title}}parameter{{/title}}')
@@ -229,17 +229,17 @@ class DebugParameter(ParameterWrapper):
 	def __init__(self, value):
 		super().__init__(TitledParameter(BooleanParameter(DefaultValuedParameter(value, False)), title='debug enabled'))
 
-class YourssServerParameters(FunctionParameters):
+class YourssServerParameters(ParameterWrapper):
 	def __init__(self, host, port, debug, base_url):
 		host_parameter = HostParameter(host)
 		port_parameter = PortParameter(port)
-		super().__init__(FunctionArguments(
+		super().__init__(FunctionParameters(FunctionArguments(
 			host=host_parameter,
 			port=port_parameter,
 			debug=DebugParameter(debug),
 			base_url=TitledParameter(DefaultFactoryValuedParameter(YourssBaseUrlParameter(base_url),
 				default_value_factory=lambda: 'http://' + str(host_parameter.valid_value()) + ':' + str(port_parameter.valid_value())), title='base url')
-		))
+		)))
 
 
 
@@ -332,14 +332,14 @@ class EpisodeBaseUrlParameter(ParameterWrapper):
 
 
 
-class FeedParameters(FunctionParameters):
+class FeedParameters(TransformingBaseParameter):
 	def __init__(self, url,
 				 match_title=None, ignore_title=None, page_index=1, page_size=100,
 				 media_type='video', quality='high', format=None, link_type='direct',
 				 title=None, thumbnail=None,
-				 yourss_base_url=None, feed_base_url=None, clip_base_url=None):
+				 yourss_base_url=None, feed_base_url=None, episode_base_url=None):
 		yourss_base_url = YourssBaseUrlParameter(yourss_base_url)
-		super().__init__(FunctionArguments(
+		super().__init__(FunctionParameters(FunctionArguments(
 			url=UrlParameter(url),
 			match_title=MatchTitleParameter(match_title),
 			ignore_title=IgnoreTitleParameter(ignore_title),
@@ -356,28 +356,38 @@ class FeedParameters(FunctionParameters):
 				FeedBaseUrlParameter(feed_base_url),
 				default_value_factory=lambda: UrlText(yourss_base_url.valid_value(), 'api', 'v1', 'feed').text()),
 			episode_base_url=DefaultFactoryValuedParameter(
-				EpisodeBaseUrlParameter(clip_base_url),
+				EpisodeBaseUrlParameter(episode_base_url),
 				default_value_factory=lambda: UrlText(yourss_base_url.valid_value(), 'api', 'v1', 'episode').text()),
-		))
+		)))
 
 	def valid_value(self, exception_type=ParameterException, *args, **kwargs):
-		result = super().valid_value(exception_type, *args, **kwargs)
+		result = self.data().valid_value(exception_type, *args, **kwargs)
 		if 'proxy' == result['link_type'] and not result['episode_base_url']:
 			raise exception_type('clip base url should be set when link type is proxy', *args, **kwargs)
 		return result
 
-class EpisodeParameters(FunctionParameters):
+class EpisodeParameters(ParameterWrapper):
 	def __init__(self, url, media_type='video', quality='high', format=None):
-		super().__init__(FunctionArguments(
+		super().__init__(FunctionParameters(
 			url=UrlParameter(url),
 			media_type=MediaTypeParameter(media_type),
 			quality=QualityParameter(quality),
 			format=FormatParameter(format)
 		))
 
-class ClientParameter(ParameterWrapper):
-	pass
-
+class ClientParameters(TransformingBaseParameter):
+	def __init__(self, output, url,
+				 match_title=None, ignore_title=None, page_index=1, page_size=10,
+				 media_type='video', quality='high', format=None, link_type='direct',
+				 title=None, thumbnail=None,
+				 yourss_base_url=None, feed_base_url=None, episode_base_url=None):
+		super().__init__(FeedParameters(url, match_title, ignore_title, page_index, page_size,
+		                                media_type, quality, format, link_type, title, thumbnail,
+		                                yourss_base_url, feed_base_url, episode_base_url))
+		self._output_parameter=OutputParameter(output)
+	def valid_value(self, exception_type=ParameterException, *args, **kwargs):
+		return self.data().valid_value(exception_type, *args, **kwargs)\
+			.add(output=self._output_parameter.valid_value(exception_type, *args, **kwargs))
 
 
 

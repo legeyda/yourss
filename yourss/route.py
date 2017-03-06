@@ -69,7 +69,7 @@ class Feed(object):
 				url=url, match_title=match_title, ignore_title=ignore_title, page_index=page_index, page_size=page_size,
 				media_type=media_type, quality=quality, format=format, link_type=link_type,
 				title=title, thumbnail=thumbnail,
-				yourss_base_url=self.yourss_base_url, feed_base_url=self.feed_base_url, clip_base_url=self.episode_base_url).valid_value()
+				yourss_base_url=self.yourss_base_url, feed_base_url=self.feed_base_url, episode_base_url=self.episode_base_url).valid_value()
 		except ParameterException as e:
 			return Response(400, e.message)
 		return feed_parameters.apply(YoutubeFeed).generate()

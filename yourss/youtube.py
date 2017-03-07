@@ -195,7 +195,7 @@ class Feed(object):
 
 
 class Episode(object):
-	def __init__(self, url, media_type='video', quality='high', format=None):
+	def __init__(self, url, media_type='audio', quality='low', format=None):
 		self.url=url
 		self.media_type=media_type
 		self.quality=quality

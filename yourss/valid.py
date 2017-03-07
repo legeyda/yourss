@@ -335,7 +335,9 @@ class EpisodeBaseUrlParameter(ParameterWrapper):
 class FeedParameters(TransformingBaseParameter):
 	def __init__(self, url,
 				 match_title=None, ignore_title=None, page_index=1, page_size=100,
-				 media_type='video', quality='high', format=None, link_type='direct',
+				 media_type=default_feed_parameter_values['media_type'],
+				 quality=default_feed_parameter_values['quality'],
+				 format=None, link_type='direct',
 				 title=None, thumbnail=None,
 				 yourss_base_url=None, feed_base_url=None, episode_base_url=None):
 		yourss_base_url = YourssBaseUrlParameter(yourss_base_url)
@@ -367,7 +369,7 @@ class FeedParameters(TransformingBaseParameter):
 		return result
 
 class EpisodeParameters(ParameterWrapper):
-	def __init__(self, url, media_type='video', quality='high', format=None):
+	def __init__(self, url, media_type='audio', quality='low', format=None):
 		super().__init__(FunctionParameters(
 			url=UrlParameter(url),
 			media_type=MediaTypeParameter(media_type),
@@ -378,7 +380,8 @@ class EpisodeParameters(ParameterWrapper):
 class ClientParameters(TransformingBaseParameter):
 	def __init__(self, output, url,
 				 match_title=None, ignore_title=None, page_index=1, page_size=10,
-				 media_type='video', quality='high', format=None, link_type='direct',
+				 media_type=default_feed_parameter_values['media_type'], quality=default_feed_parameter_values['quality'],
+				 format=None, link_type='direct',
 				 title=None, thumbnail=None,
 				 yourss_base_url=None, feed_base_url=None, episode_base_url=None):
 		super().__init__(FeedParameters(url, match_title, ignore_title, page_index, page_size,

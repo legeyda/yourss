@@ -43,7 +43,7 @@ class Episode(object):
 		self.yourss_base_url=yourss_base_url
 		self.base_url=base_url
 	@cherrypy.expose
-	def index(self, url, media_type='video', quality='high', format=None):
+	def index(self, url, media_type='audio', quality='low', format=None):
 		try: arguments=EpisodeParameters(url, media_type=media_type, quality=quality, format=format).valid_value()
 		except ParameterException as e: return Response(400, e.message)
 		episode=arguments.apply(YoutubeEpisode)

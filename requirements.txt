@@ -1,4 +1,4 @@
 CherryPy==8.1.2
 gunicorn==19.6.0
 pystache==0.5.4
-youtube-dl==2018.3.3
+youtube-dl==2019.01.30.1

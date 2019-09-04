@@ -229,7 +229,7 @@ class Episode(object):
 		else: return None
 	def filename(self):
 		#return hashlib.sha224(self.url.encode('UTF-8')).hexdigest() + '.' + self.get_ext()
-		return self.get_info()['id'] + '.' + self.get_ext()
+		return (self.get_info()['id'] if 'id' in self.get_info() else 'episode') + '.' + self.get_ext()
 	def thumbnail(self):
 		return self.get_info().get('thumbnail', None)
 	def generate(self):

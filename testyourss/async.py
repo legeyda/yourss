@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from yourss.async import StdoutRedirector
+from yourss.asynch import StdoutRedirector
 from sys import stdout
 
 

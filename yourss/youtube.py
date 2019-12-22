@@ -1,7 +1,7 @@
 import youtube_dl
 import json
 from .text import Text, UrlQuery, PystacheArtifact, UrlText, PystacheFileTemplate
-from .async import StdoutRedirector
+from .asynch import StdoutRedirector
 from functools import reduce
 from datetime import datetime
 import logging

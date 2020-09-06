@@ -247,9 +247,9 @@ class Application(VBox):
 		self.page_index = self.page.create_child(LabeledEntry, entry_constructor=ValuedIntEntry, sticky=tk.E+tk.W, label='Page Index', value=default_feed_parameter_values['page_index'], change=self.validate)
 
 		link_styles=[
+			("proxy",   'Link to yourss proxy'),
 			("direct",  'Direct link to video extracted by youtube_dl'),
-			("webpage", 'Link to webpage containing episode'),
-			("proxy",   'Link to yourss proxy')
+			("webpage", 'Link to webpage containing episode')
 		]
 		self.link_style = self.add_param_hide_frame.create_child(LabeledEntry, sticky=tk.E+tk.W, entry_constructor=ValuedOptionMenu, entry_kwargs={'items': link_styles, 'value': default_feed_parameter_values['link_type']}, change=self.validate)
 

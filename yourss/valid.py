@@ -253,7 +253,7 @@ default_feed_parameter_values={
 	'page_size': 10,
 	'media_type': 'audio',
 	'quality': 'low',
-	'link_type': 'direct'
+	'link_type': 'proxy'
 }
 
 class OutputParameter(ParameterWrapper):
@@ -337,7 +337,7 @@ class FeedParameters(TransformingBaseParameter):
 				 match_title=None, ignore_title=None, page_index=1, page_size=100,
 				 media_type=default_feed_parameter_values['media_type'],
 				 quality=default_feed_parameter_values['quality'],
-				 format=None, link_type='direct',
+				 format=None, link_type='proxy',
 				 title=None, thumbnail=None,
 				 yourss_base_url=None, feed_base_url=None, episode_base_url=None):
 		yourss_base_url = YourssBaseUrlParameter(yourss_base_url)
@@ -381,7 +381,7 @@ class ClientParameters(TransformingBaseParameter):
 	def __init__(self, output, url,
 				 match_title=None, ignore_title=None, page_index=1, page_size=10,
 				 media_type=default_feed_parameter_values['media_type'], quality=default_feed_parameter_values['quality'],
-				 format=None, link_type='direct',
+				 format=None, link_type='proxy',
 				 title=None, thumbnail=None,
 				 yourss_base_url=None, feed_base_url=None, episode_base_url=None):
 		super().__init__(FeedParameters(url, match_title, ignore_title, page_index, page_size,

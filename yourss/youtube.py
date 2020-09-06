@@ -30,7 +30,7 @@ class YdlFormat(Text):
 class FeedLink(Text):
 	def __init__(self, base_url, url,
 	             match_title=None, ignore_title=None, page_index=1, page_size=10,
-	             media_type='video', quality='high', format=None, link_type='direct',
+	             media_type='video', quality='high', format=None, link_type='proxy',
 	             title=None, thumbnail=None):
 		self._base_url=base_url
 		self._url=url
@@ -73,7 +73,7 @@ class YourssFormatUrlParams(object):
 
 
 class EpisodeLink(Text):
-	def __init__(self, clip_base_url, ydl_json, media_type='video', quality='high', format_=None, link_type='direct'):
+	def __init__(self, clip_base_url, ydl_json, media_type='video', quality='high', format_=None, link_type='proxy'):
 		self.clip_base_url=clip_base_url
 		self.ydl_json=ydl_json
 		self.media_type=media_type
@@ -93,7 +93,7 @@ class EpisodeLink(Text):
 		url_data.update(YourssFormatUrlParams(self.media_type, self.quality, self.format).as_dict())
 		return UrlText(self.clip_base_url, UrlQuery(**url_data))
 	def text(self):
-		return {'webpage': self.webpage_url, 'direct': self.direct_url, 'proxy': self.proxy_url}[self.link_type]()
+		return {'proxy': self.proxy_url, 'webpage': self.webpage_url, 'direct': self.direct_url}[self.link_type]()
 
 
 class DateRfc822D(Text):
@@ -121,7 +121,7 @@ class YdlFileSize(object):
 class Feed(object):
 	def __init__(self, url,
 				 match_title=None, ignore_title=None, page_index=1, page_size=10,
-				 media_type='video', quality='high', format=None, link_type='direct',
+				 media_type='video', quality='high', format=None, link_type='proxy',
 				 title=None, thumbnail=None,
 				 yourss_base_url=None, feed_base_url=None, episode_base_url=None):
 		self.url=url

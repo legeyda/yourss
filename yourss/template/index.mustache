@@ -28,7 +28,7 @@
 		default_values={
 			title: null, thumbnail: null,
 			match_title: null, ignore_title: null,
-			page_index: '1', page_size: '10', link_style: 'direct',
+			page_index: '1', page_size: '10', link_style: 'proxy',
 			media_type: 'audio', quality: 'low', format: null
 		};
 		// do not send fields which are not required 
@@ -133,9 +133,9 @@
 				<td colspan="4">
 					<label>Link style<br/>
 						<select id="link_type" name="link_type">
-							<option value="direct" selected="selected">Direct link to video extracted by youtube_dl</option>
+							<option value="proxy" selected="selected">Link to yourss proxy</option>
+							<option value="direct">Direct link to video extracted by youtube_dl</option>
 							<option value="webpage">Link to webpage containing episode</option>
-							<option value="proxy">Link to yourss proxy</option>
 						</select>
 					</label>
 				</td>

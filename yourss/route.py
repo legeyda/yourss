@@ -61,7 +61,7 @@ class Feed(object):
 		self.episode_base_url=episode_base_url
 	@cherrypy.expose
 	def index(self, url, match_title=None, ignore_title=None,  page_index=1, page_size=10,
-	          media_type='audio', quality='low', format=None, link_type='direct',
+	          media_type='audio', quality='low', format=None, link_type='proxy',
 	          title=None, thumbnail=None):
 		cherrypy.response.headers['Content-Type']='text/xml'
 		try:

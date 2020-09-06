@@ -18,7 +18,7 @@ class CommandLineArguments(object):
 		parser.add_argument('--media-type',   '-t', type=str,  help='', choices=['audio', 'video'], default=default_feed_parameter_values['media_type']),
 		parser.add_argument('--quality',      '-q', type=str,  help='', choices=['high', 'low'], default=default_feed_parameter_values['quality']),
 		parser.add_argument('--format',       '-f', type=str,  help='', default=None)
-		parser.add_argument('--link-type',    '-l', type=str,  help='', choices=['direct', 'webpage', 'proxy'], default=default_feed_parameter_values['link_type']),
+		parser.add_argument('--link-type',    '-l', type=str,  help='', choices=['proxy', 'direct', 'webpage'], default=default_feed_parameter_values['proxy']),
 		parser.add_argument('--title',              type=str,  help='', default=None)
 		parser.add_argument('--thumbnail',          type=str,  help='', default=None)
 		parser.add_argument('--output',       '-o', type=str,  help='output file, - for stdout', default='-')
@@ -50,7 +50,7 @@ class FileWriter(object):
 # for embedding
 def generate_feed(base_url, url,
                   match_title=None, ignore_title=None, page_index=1, page_size=10,
-                  media_type='video', quality='high', format=None, link_type='direct',
+                  media_type='video', quality='high', format=None, link_type='proxy',
                   title=None, thumbnail=None,
                   output='-'):
 	feed = Feed(url, match_title, ignore_title, page_index, page_size,

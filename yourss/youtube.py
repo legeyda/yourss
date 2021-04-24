@@ -182,7 +182,7 @@ class Feed(object):
 			item['mimetype']='audio/' + item.get('ext', 'webm') if self.media_type=='audio' else 'video/' + item.get('ext', 'mp4')
 			item['yourss_url']=self.yourss_base_url
 			if 'tags' in  item:
-				item['tag_str']=','.join(item['tags'])
+				item['tag_str']=','.join(item['tags'] or [])
 			item['filesize']=YdlFileSize(item).value()
 			yield PystacheArtifact(PystacheFileTemplate('rss-item'), **item).text()
 		if once_flag:

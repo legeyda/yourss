@@ -1,6 +1,5 @@
 from yourss.client import FileWriter
 from yourss.youtube import Feed
-from . import client
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from .valid import default_feed_parameter_values, FeedParameters, ParameterException, OutputParameter

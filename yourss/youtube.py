@@ -161,7 +161,7 @@ class Feed(object):
 								 self.page_index, self.page_size,
 								 self.media_type, self.quality, self.format,
 								 self.link_type, self.title, self.thumbnail).text(),
-			'thumbnail': self.thumbnail,
+			'thumbnail': None,
 			'title': None
 		}
 		for line in StdoutRedirector(self._action):
@@ -172,6 +172,7 @@ class Feed(object):
 			if once_flag:
 				once_flag=False
 				feed_data['title']=self.title if self.title else item['playlist_title'] if 'playlist_title' in item else 'Episodes from ' + self.url
+				feed_data['thumbnail'] = self.thumbnail or item['thumbnail']
 				yield PystacheArtifact(PystacheFileTemplate('rss-header'), **feed_data).text()
 			try:
 				item['url']=EpisodeLink(self.episode_base_url, item, self.media_type, self.quality, self.format, self.link_type).text()
@@ -181,8 +182,9 @@ class Feed(object):
 			item['upload_date']=DateRfc822D(item.get('upload_date')).text()
 			item['mimetype']='audio/' + item.get('ext', 'webm') if self.media_type=='audio' else 'video/' + item.get('ext', 'mp4')
 			item['yourss_url']=self.yourss_base_url
+			item['thumbnail']=item['thumbnail'] or self.thumbnail
 			if 'tags' in  item:
-				item['tag_str']=','.join(item['tags'] or [])
+				item['tag_str']=', '.join(item['tags'] or [])
 			item['filesize']=YdlFileSize(item).value()
 			yield PystacheArtifact(PystacheFileTemplate('rss-item'), **item).text()
 		if once_flag:

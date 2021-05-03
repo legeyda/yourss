@@ -85,11 +85,14 @@ class ApiV1(Router):
 		                base_url=UrlText(self.base_url, 'episode').text())
 		Router.__init__(self, Route('feed', feed), Route('episode', episode))
 
-class YoutubeChannel(Router):
+class YoutubeRoute(Router):
 	def __init__(self, yourss_base_url, base_url):
 		Router.__init__(self)
 		self.yourss_base_url=yourss_base_url
 		self.base_url=base_url
+
+	def _get_youtube_url(self, *args):
+		raise Exception('not implemented')
 
 	@cherrypy.expose
 	def default(self, *args, match_title=None, ignore_title=None,  page_index=1, page_size=10,
@@ -98,14 +101,27 @@ class YoutubeChannel(Router):
 		cherrypy.response.headers['Content-Type'] = 'text/xml'
 		try:
 			feed_parameters = FeedParameters(
-				url='https://www.youtube.com/channel/' + '/'.join(args), match_title=match_title, ignore_title=ignore_title, page_index=page_index, page_size=page_size,
+				url=self._get_youtube_url(args), match_title=match_title, ignore_title=ignore_title, page_index=page_index, page_size=page_size,
 				media_type=media_type, quality=quality, format=format, link_type=link_type,
 				title=title, thumbnail=thumbnail,
 				yourss_base_url=self.yourss_base_url, feed_base_url=UrlText(self.base_url, 'api', 'v1', 'feed').text(),
-				episode_base_url=UrlText(self.base_url, 'api', 'v1', 'episode').text()).valid_value()
+				episode_base_url=UrlText(self.yourss_base_url, 'api', 'v1', 'episode').text()).valid_value()
 		except ParameterException as e:
 			return Response(400, e.message)
 		return feed_parameters.apply(YoutubeFeed).generate()
+
+class YoutubeChannel(YoutubeRoute):
+	def _get_youtube_url(self, parts):
+		return 'https://www.youtube.com/channel/' + '/'.join(parts)
+
+class YoutubeC(YoutubeRoute):
+	def _get_youtube_url(self, parts):
+		return 'https://www.youtube.com/c/' + '/'.join(parts)
+
+class YoutubeUser(YoutubeRoute):
+	def _get_youtube_url(self, parts):
+		return 'https://www.youtube.com/user/' + '/'.join(parts)
+
 
 class YoutubeSearch(Router):
 	def __init__(self, yourss_base_url, base_url):
@@ -134,14 +150,16 @@ class YoutubeSearch(Router):
 class Root(Router):
 	def __init__(self, base_url):
 		self.base_url=base_url
-		apiv1_parts=('api', 'v1')
-		channel_parts=('channel',)
-		search_parts=('results',)
 		Router.__init__(self,
-			Route(apiv1_parts,   ApiV1(         self.base_url, base_url=UrlText(self.base_url, *apiv1_parts  ).text())),
-			Route(channel_parts, YoutubeChannel(self.base_url, base_url=UrlText(self.base_url, *channel_parts).text())),
-			Route(search_parts,  YoutubeSearch( self.base_url, base_url=UrlText(self.base_url, *search_parts ).text())),
-		)
+			self._create_route(ApiV1, 'api', 'v1'),
+			self._create_route(YoutubeChannel, 'channel'),
+			self._create_route(YoutubeC, 'c'),
+			self._create_route(YoutubeUser, 'user'),
+			self._create_route(YoutubeSearch, 'results'))
+
+	def _create_route(self, factory, *parts):
+		return Route(parts, factory(self.base_url, base_url=UrlText(self.base_url, *parts).text()))
+
 	@cherrypy.expose
 	def index(self):
 		return PystacheArtifact(PystacheFileTemplate('index'), BASE_URL=self.base_url).text()

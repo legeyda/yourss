@@ -1,4 +1,4 @@
 CherryPy==18.5.0
-gunicorn==19.6.0
+gunicorn==22.0.0
 pystache==0.5.4
 youtube-dl

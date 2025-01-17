@@ -1,15 +1,12 @@
 #make
 target
+__pycache__
 
 # setuptools
 build
 dist
 MANIFEST
 
-# ides
-.idea
-*.pyc
-*.sublime-*
 
 # other
 .python

@@ -1,4 +1,4 @@
-import youtube_dl
+import yt_dlp as youtube_dl
 import json
 from .text import Text, UrlQuery, PystacheArtifact, UrlText, PystacheFileTemplate
 from .asynch import StdoutRedirector
